@@ -1,0 +1,31 @@
+7
+Fast And Furious
+Action
+107
+16
+The Hunger Games
+Action
+142
+13
+Mean Girls
+Comedy
+97
+10
+Harry Potter 
+Fantasy
+152
+10
+The Notebook
+Drama
+123
+16
+Shrek
+Kids
+90
+0
+The Grudge
+Horror
+91 
+16
+
+
