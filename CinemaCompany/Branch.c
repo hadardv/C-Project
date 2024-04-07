@@ -9,12 +9,14 @@
 
 void initShowTime(ShowTime* showTime, Branch* branch)
 {
+	
 	Movie* movie = findAMovie(branch); 
 	showTime->theMovie = *movie; 
 	Theater* theater = findATheater(branch); 
 	showTime->theTheater = *theater;  
 	getDate(&showTime->date); 
 	getTime(&showTime->time); 
+	showTime->serialNum = branch->numOfShowTime + 1;
 
 }
 
@@ -38,6 +40,36 @@ Movie* findAMovie(Branch* branch)
 		} while (temp == NULL);
 		return temp;
 	}
+
+ShowTime* findAShowTime(Branch* branch)
+{
+	if (branch->numOfShowTime < 1)
+	{
+		printf("There are not Show Times\n");
+		return NULL;
+	}
+
+	printf("Choose show time from the list, type it's serial num:\n");
+	printShowTimeArr(branch);
+	ShowTime* temp = NULL;
+	int sn;
+	do {
+		scanf("%d", &sn);
+		temp = findShowTimeByNum(branch, sn);
+		if (!temp) printf("There is not such a movie, try again\n");
+	} while (temp == NULL);
+	return temp;
+}
+
+ShowTime* findShowTimeByNum(Branch* branch, int showTimeNum)
+{
+	for (int i = 0; i < branch->numOfShowTime; i++)
+	{
+		if (branch->showTimeArray[i].serialNum == showTimeNum) return &branch->showTimeArray[i];
+	}
+	return NULL;
+}
+
 
 
 Movie* findMovieByName(Branch* branch, char* name) 

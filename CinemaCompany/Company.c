@@ -12,6 +12,7 @@ void initCompany(Company* comp)
 	comp->name = getStrExactName("Enter Company name:\n");
 	if (!L_init(&comp->branchList)) return ;
 	comp->numOfBranches = 0; 
+	comp->ticketSales = NULL;
 }
 
 void initBranch(Branch* branch, Company* pComp)
@@ -33,6 +34,29 @@ void initBranch(Branch* branch, Company* pComp)
 	branch->showTimeArray = NULL;
 	branch->numOfTheaters = 0;
 	branch->numOfMovies = 0;
+}
+
+int initTicket(Ticket* pTicket,Company* comp,Branch* pBranch)
+{
+	initCostumer(&pTicket->theCostumer); 
+	int choice=0;
+	do {
+		pTicket->theShowTime = chooseShowTime(comp, pBranch);
+		if (&pTicket->theShowTime == NULL)
+		{
+			return 0;
+		}
+		if (!checkAgeLimit(pTicket))
+		{
+			printf("To cancel the order press -1,to choose another show time press 1\n");
+			scanf("%d", &choice);
+			if (choice == -1)
+				return 0;
+		}
+	} while (choice == 1);
+	setPrice(pTicket);
+	pTicket->seatNum = setSeat(&pTicket->theShowTime.theTheater);
+	return 1;
 }
 
 
@@ -216,6 +240,59 @@ int addShowTime(Company* comp)
 	pBranch->showTimeArray[pBranch->numOfShowTime] = *pShowTime; 
 	pBranch->numOfShowTime++;
 	return 1;
+}
+
+void buyTicket(Company* comp)
+{
+	Branch* pBranch = findABranch(comp); 
+
+	if (pBranch->showTimeArray == NULL) 
+	{
+		//pBranch->showTimeArray = NULL;
+		pBranch->numOfShowTime = 0; 
+	} 
+
+	if (pBranch->numOfShowTime == 0) 
+	{
+		printf("There are not show times\n");
+		return;
+	}
+
+	if (comp->ticketSales == NULL)
+	{
+		comp->numOfTickets = 0;
+	}
+
+	size_t newSize = (size_t)(comp->numOfTickets + 1) * sizeof(Ticket);
+	Ticket* temp = realloc(comp->ticketSales, newSize);
+	if (!temp) {
+		printf("Failed to allocate memory for new ticket.\n");
+		return;
+	}
+	comp->ticketSales = temp;
+
+	Ticket* pTicket = &comp->ticketSales[comp->numOfTickets]; 
+	if (initTicket(pTicket, comp, pBranch))
+	{
+		comp->ticketSales[comp->numOfTickets] = *pTicket;
+		comp->numOfTickets++;
+	}
+	else
+	{
+		printf("Order cancelled\n");
+	}
+
+	printSeatMap(&pTicket->theShowTime.theTheater); 
+
+
+}
+
+ShowTime chooseShowTime(Company* comp,Branch* pBranch)
+{
+	//Branch* pBranch = findABranch(comp);
+	ShowTime* pShowTime = findAShowTime(pBranch); 
+	return *pShowTime;
+
 }
 
 void printCompany(Company* comp) {

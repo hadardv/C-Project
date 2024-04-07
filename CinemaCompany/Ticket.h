@@ -6,16 +6,14 @@
 
 typedef struct
 {
-	int seatNum;
-	float price;
+	char* seatNum;
+	double price;
 	ShowTime theShowTime;
 	Costumer theCostumer;
-	Ticket** ticketSales; 
 
 }Ticket;
 
-//int initTicket(Ticket* pTicket);
-//int checkForDiscount(Ticket* pTicket);
-//int checkIfSeatTaken(Ticket* pTicket);
-//int checkAgeLimit(Ticket* pTicket);
+void setPrice(Ticket* pTicket);
+void checkForDiscount(Ticket* pTicket);
+int checkAgeLimit(Ticket* pTicket);
 #endif 

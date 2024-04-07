@@ -85,7 +85,7 @@ int setDuration()
 
 void printMovie(const Movie* pMovie)
 {
-	printf("%s\n", pMovie->name);
+	printf("\t%s\n", pMovie->name);
 	printf("Genres: ");
 	printGenres(pMovie->genreArr);
 	printf("Duration: %d minuets \tAge Limit: %d years\n", pMovie->duration, pMovie->ageLimit);

@@ -7,15 +7,19 @@
 #include "Theater.h"
 
 
+
 typedef struct
 {
+	int serialNum;
 	Date date;
 	Time time;
 	Movie theMovie; 
 	Theater theTheater;
+	
 
 }ShowTime;
 
 void printShowTime(const ShowTime* showTime);
+
 
 #endif

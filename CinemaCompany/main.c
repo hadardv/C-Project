@@ -6,11 +6,11 @@
 typedef enum
 {
 	eAddBranch, eAddTheater, eAddMovie, eAddShowTime, ePrintCompany,
-	ePrintBranchData, eNofOptions
+	ePrintBranchData, eBuyTicket, eNofOptions
 } eMenuOptions;
 
 const char* str[eNofOptions] = { "Add Branch","Add Theater","Add Movie","Add Show Time",
-								"Print Company","Print Branch Data" };
+								"Print Company","Print Branch Data","Buy Ticket" };
 
 #define EXIT			-1
 int menu();
@@ -56,6 +56,10 @@ int main() {
 
 		case ePrintBranchData:
 			printSpecificBranch(&cinemaCompany);
+			break;
+
+		case eBuyTicket:
+			buyTicket(&cinemaCompany); 
 			break;
 
 		case EXIT:

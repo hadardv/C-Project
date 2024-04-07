@@ -15,13 +15,16 @@ typedef struct
 {
 	int theaterNumber;
 	int maximumCapacity;
-	int* seats;
+	int** seats;
 	eTheaterType	type; 
 }Theater;
 
 void initTheater(Theater* theater,Theater* theaterArr, int theaterCount);
 eTheaterType getTheaterType();
+char* setSeat(Theater* theater);
+int checkIfSeatIsEmpty(Theater* theater, int wantedRow, int wantedCol);
 void printTheater(const Theater* theater);
+void printSeatMap(const Theater* theater);
 void freeTheater(Theater* theater);
 
 #endif 

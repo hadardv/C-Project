@@ -1,14 +1,2 @@
-﻿  Branch.c
-  Company.c
-  Costumer.c
-  Date.c
-  general.c
-  list.c
-  main.c
-  Movie.c
-  ShowTime.c
-  Theater.c
-  Ticket.c
-  Time.c
-  Generating Code...
+﻿  Theater.c
   CinemaCompany.vcxproj -> C:\Users\hadar\Desktop\מבוא לתכנות מערכות\Final Project\CinemaCompany\x64\Debug\CinemaCompany.exe

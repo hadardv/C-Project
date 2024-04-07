@@ -3,16 +3,17 @@
 
 #include "list.h"
 
+
 typedef struct
 {
 	int id;
 	int age;
-	LIST purchases;
 
 }Costumer;
 
-//int initCostumer(Costumer* pCostumer);
-//int buyTicket(Costumer* pCostumer);
-//int cancelTicket(Costumer* pCostumer);
+Costumer initCostumer(Costumer* pCostumer);
+int setAge();
+int setId();
+int isValidId(int id);
 
 #endif 

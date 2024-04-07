@@ -24,6 +24,8 @@ void initShowTime(ShowTime* showTime, Branch* branch);
 int getSerialNum();
 Movie* findAMovie(Branch* branch);
 Theater* findATheater(Branch* branch);
+ShowTime* findAShowTime(Branch* branch);
+ShowTime* findShowTimeByNum(Branch* branch, int showTimeNum);
 Movie* findMovieByName(Branch* branch, char* name);
 Theater* findTheaterByNum(Branch* branch, int theaterNum);
 //void readMoviesFromTextfile(Movie* pMovie, FILE* fp);

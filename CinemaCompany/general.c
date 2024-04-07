@@ -67,3 +67,4 @@ int isAllLettersOrSpaces(const char* str) {
 	return 1; // All characters are letters or spaces
 }
 
+

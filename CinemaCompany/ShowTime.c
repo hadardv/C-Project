@@ -6,6 +6,7 @@
 
 void printShowTime(const ShowTime* showTime)
 {
+	printf("serial number: %d\n",showTime->serialNum);
 	printMovie(&showTime->theMovie);
 	printTheater(&showTime->theTheater);
 	printDate(&showTime->date);
