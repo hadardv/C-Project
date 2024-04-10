@@ -15,6 +15,7 @@ typedef struct
 void	getTime(Time* pTime); 
 int		checkTime(char* time, Time* pTime); 
 int		saveTimeToFile(const Time* pTime, FILE* fp);
+Time*	loadTimeFromTxtFile(FILE* fp);
 void	printTime(const Time* pTime); 
 
 

@@ -102,3 +102,12 @@ char* readDynStringFromTextFile(FILE* fp)
 	myGets(temp, sizeof(temp), fp);
 	return getDynStr(temp);
 }
+
+void skipLine(FILE* fp) {
+	char buffer[1024]; // Adjust the buffer size as needed
+
+	if (fp != NULL) {
+		// Read a line and discard it
+		fgets(buffer, sizeof(buffer), fp);
+	}
+}

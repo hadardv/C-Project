@@ -3,10 +3,11 @@
 #include <string.h>
 #include <ctype.h>
 #include "ShowTime.h"
+#include "general.h"
 
 void printShowTime(const ShowTime* showTime)
 {
-	printf("serial number: %d\n",showTime->serialNum);
+	printf("\n\nserial number: %d\n",showTime->serialNum);
 	printMovie(&showTime->theMovie);
 	printTheater(&showTime->theTheater);
 	printDate(&showTime->date);
@@ -26,8 +27,8 @@ int	saveShowTimeToFile(const ShowTime* pShowTime, FILE* fp)
 		return 0;
 	}
 	return 1;
-
 }
+
 
 void freeShowTime(ShowTime* showTime)
 {

@@ -23,6 +23,7 @@ typedef struct
 
 void initMovie(Movie* pMovie, Movie** movieArr, int numOfMovies);
 eGenre getMovieGenre();
+eGenre convertStringToGenre(const char* genreStr);
 
 char* getMovieName(Movie** movieArr, int numOfMovies);
 int isMovieUnique(Movie** movieArr, int numOfMovies,char* name);
@@ -30,6 +31,7 @@ int setAgeLimit(eGenre* genreArr);
 int setDuration();
 
 int	saveMovieToFile(const Movie* pMovie, FILE* fp);
+Movie* loadMovieFromTxtFile(FILE* fp);
 
 void printMovie(const Movie* pMovie);
 void printMovieV(void* pMovie);

@@ -1,17 +1,4 @@
 ﻿  Branch.c
   Company.c
-C:\Users\hadar\Desktop\מבוא לתכנות מערכות\Final Project\CinemaCompany\Company.c(192,11): warning C4047: 'function': 'NODE *' differs in levels of indirection from 'DATA *'
-C:\Users\hadar\Desktop\מבוא לתכנות מערכות\Final Project\CinemaCompany\Company.c(192,11): warning C4024: 'L_delete': different types for formal and actual parameter 1
-  Costumer.c
-  Date.c
-  fileHelper.c
-  general.c
-  list.c
-  main.c
-  Movie.c
-  ShowTime.c
-  Theater.c
-  Ticket.c
-  Time.c
   Generating Code...
   CinemaCompany.vcxproj -> C:\Users\hadar\Desktop\מבוא לתכנות מערכות\Final Project\CinemaCompany\x64\Debug\CinemaCompany.exe

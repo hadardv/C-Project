@@ -9,4 +9,5 @@ char*	readDynStringFromTextFile(FILE* fp);
 int		readFixSizeStrFromFile(char* arr, FILE* fp, const char* msg);
 int		readCharsFromFile(char* arr, int size, FILE* fp, const char* msg);
 int		readIntFromFile(int* val, FILE* fp, const char* msg);
+void skipLine(FILE* fp);
 

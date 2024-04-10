@@ -5,11 +5,11 @@
 
 typedef enum
 {
-	eAddBranch, eAddTheater, eAddMovie, eAddShowTime, ePrintCompany,
+	eLoadFromTxtFile,eLoadFromBinaryFile, eAddBranch, eAddTheater, eAddMovie, eAddShowTime, ePrintCompany,
 	ePrintBranchData, eBuyTicket,eRemoveBranch,eSortShowTime,eSearchShowTime, eNofOptions
 } eMenuOptions;
 
-const char* str[eNofOptions] = { "Add Branch","Add Theater","Add Movie","Add Show Time",
+const char* str[eNofOptions] = { "Load From Txt File","Load From Binary File","Add Branch","Add Theater","Add Movie","Add Show Time",
 								"Print Company","Print Branch Data","Buy Ticket","Remove Branch","Sort Show Time" ,"Search Show Time" };
 
 #define EXIT			-1
@@ -21,9 +21,8 @@ int menu();
 
 int main() {
 	Company	cinemaCompany;
-	//Branch branch;
 	
-	initCompany(&cinemaCompany);
+	//initCompany(&cinemaCompany);
 
 	int option;
 	int stop = 0;
@@ -36,6 +35,17 @@ int main() {
 		option = menu();
 		switch (option)
 		{
+		case eLoadFromTxtFile:
+
+			if (!loadCompanyFromTxtFile(&cinemaCompany,COMPANY_TXT_FILE_NAME))
+				printf("Error Loading Company\n");
+			break;
+
+		case eLoadFromBinaryFile:
+			if (!addBranch(&cinemaCompany)) 
+				printf("Error adding Branch\n");
+			break;
+
 		case eAddBranch:
 			if (!addBranch(&cinemaCompany))
 				printf("Error adding Branch\n");

@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "Date.h"
 #include "general.h"
+#include "fileHelper.h"
+#include "macros.h"
 
 
 const int DAY_MONTHS[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
@@ -54,6 +56,21 @@ int		saveDateToBinaryFile(const Date* pDate, FILE* fp)
 
 	return 1;
 
+}
+
+Date* loadDateFromTxtFile(FILE* fp) {
+
+	Date* pDate = (Date*)malloc(sizeof(Date));
+	RETURN_NULL(pDate);
+	
+	char dateStr[256];
+	char* tempDateStr;
+
+	myGets(dateStr, MAX_STR_LEN, fp);
+	tempDateStr = getDynStr(dateStr);
+	checkDate(tempDateStr, pDate);
+
+	return pDate;
 }
 
 void printDate(const Date* pDate)

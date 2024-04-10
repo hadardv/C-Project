@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "Time.h"
 #include "general.h"
+#include "macros.h"
 
 #define TIME_SEPERATOR ':'
 
@@ -47,6 +48,22 @@ int		saveTimeToFile(const Time* pTime, FILE* fp)
 
 	return 1;
 
+}
+
+Time* loadTimeFromTxtFile(FILE* fp) {
+	Time* pTime = (Time*)malloc(sizeof(Time));
+	RETURN_NULL(pTime);
+	char timeStr[MAX_STR_LEN]; 
+
+	
+	if (fgets(timeStr, sizeof(timeStr), fp) != NULL) {
+		timeStr[strcspn(timeStr, "\n")] = 0;
+
+		
+		sscanf(timeStr, "%d:%d", &pTime->hour, &pTime->minuets);
+	}
+
+	return pTime;
 }
 
 void printTime(const Time* pTime)

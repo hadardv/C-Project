@@ -4,6 +4,7 @@
 #include <ctype.h> 
 #include "Costumer.h"
 #include "general.h"
+#include "macros.h"
 
 Costumer initCostumer(Costumer* pCostumer)
 {
@@ -61,10 +62,8 @@ int isValidId(int id)
 
 int saveCostumerToFile(const Costumer* costumer, const char* fileName) {
 	FILE* fp = fopen(fileName, "wb"); 
-	if (!fp) {
-		printf("Failed to open file for writing.\n");
-		return 0; 
-	}
+	RETURN_ZERO(fp);
+	
 
 	if (fwrite(costumer, sizeof(Costumer), 1, fp) != 1) {
 		printf("Failed to write costumer to file.\n");

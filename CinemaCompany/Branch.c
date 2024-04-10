@@ -6,6 +6,7 @@
 #include "Company.h"
 #include "general.h"
 #include "fileHelper.h"
+#include "macros.h"
 
 
 void initShowTime(ShowTime* showTime, Branch* branch)
@@ -25,57 +26,48 @@ int saveBranchToBinaryFile(const Branch* pBranch, FILE* fp) {
 
 	if (!writeIntToFile(pBranch->serialNum, fp, "Error writing serialNum"))
 	{
-		fclose(fp);
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp);
 	}
 	if (!writeStringToFile(pBranch->name, fp, "Error writing name"))
 	{
-		fclose(fp);
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp);
 	}
 	if (!writeStringToFile(pBranch->cityLocation, fp, "Error writing cityLocation"))
 	{
-		fclose(fp);
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp);
 	}
 	if (!writeIntToFile(pBranch->numOfTheaters, fp, "Error writing numOfTheaters"))
 	{
-		fclose(fp);
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp);
 	}
 	if (!writeIntToFile(pBranch->numOfMovies, fp, "Error writing numOfMovies"))
 	{
-		fclose(fp);
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp);
 	}
 	if (!writeIntToFile(pBranch->numOfShowTime, fp, "Error writing numOfShowTime"))
 	{
-		fclose(fp);
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp);
 	}
 
 	 
 	for (int i = 0; i < pBranch->numOfMovies; i++) {
 		if (!saveMovieToFile(pBranch->moviesArr[i], fp)) {
 			printf("Error writing movie\n");
-			fclose(fp);
-			return 0;
+			COLSE_FILE_RETURN_ZERO(fp);
 		}
 	}
 
 	for (int i = 0; i < pBranch->numOfTheaters; i++) {
 		if (!saveTheaterToFile(&pBranch->theaterArray[i], fp)) {
 			printf("Error writing theater\n");
-			fclose(fp); 
-			return 0;
+			COLSE_FILE_RETURN_ZERO(fp);
 		}
 	}
 
 	for (int i = 0; i < pBranch->numOfShowTime; i++) {
 		if (!saveShowTimeToFile(&pBranch->showTimeArray[i], fp)) {
 			printf("Error writing showtime\n");
-			fclose(fp); 
-			return 0;
+			COLSE_FILE_RETURN_ZERO(fp);
 		}
 	}
 	return 1;
@@ -92,22 +84,22 @@ int saveBranchToTxtFile(const Branch* pBranch, FILE* fp)
 
 	fprintf(fp, "Movies:\n");
 	for (int i = 0; i < pBranch->numOfMovies; i++) {
-		fprintf(fp, "\tMovie name: %s\n", pBranch->moviesArr[i]->name);
+		fprintf(fp, "Movie name: %s\n", pBranch->moviesArr[i]->name);
 		for (int j = 0; j < MAX_GENRES; j++)
 		{
 			if (pBranch->moviesArr[i]->genreArr[j] != -1)
-				fprintf(fp, "\tMovie genres: %s ", MovieTypeStr[pBranch->moviesArr[i]->genreArr[j]]);
+				fprintf(fp, "Movie genres: %s ", MovieTypeStr[pBranch->moviesArr[i]->genreArr[j]]);
 		}
 		fprintf(fp, "Duration: %d\n", pBranch->moviesArr[i]->duration);
 	}
 
 	for (int i = 0; i < pBranch->numOfTheaters; i++) {
-		fprintf(fp, "\tTheater number: %d\n", pBranch->theaterArray[i].theaterNumber);
+		fprintf(fp, "Theater number: %d\n", pBranch->theaterArray[i].theaterNumber);
 		fprintf(fp, "Theater type: %s\n", TheaterTypeStr[pBranch->theaterArray[i].type]);
 	}
 
 	for (int i = 0; i < pBranch->numOfShowTime; i++) {
-		fprintf(fp, "\tMovie name: %s\n", pBranch->showTimeArray[i].theMovie.name);
+		fprintf(fp, "Movie name: %s\n", pBranch->showTimeArray[i].theMovie.name);
 		fprintf(fp, "Theater: %d type: %s\n", pBranch->showTimeArray[i].theTheater.theaterNumber, TheaterTypeStr[pBranch->theaterArray[i].type]);
 		fprintf(fp, "Date: %d.%d.%d\n", pBranch->showTimeArray[i].date.day, pBranch->showTimeArray[i].date.month, pBranch->showTimeArray[i].date.year); 
 		fprintf(fp, "Time: %d:%d\n", pBranch->showTimeArray[i].time.hour, pBranch->showTimeArray[i].time.minuets); 
@@ -116,6 +108,111 @@ int saveBranchToTxtFile(const Branch* pBranch, FILE* fp)
 
 	
 	return 1; // Return success
+}
+
+int loadBranchFromTxtFile(Branch* pBranch, FILE* fp)
+{
+	Movie* tempMovie;
+	int tempSN=0;
+	char tempName[MAX_STR_LEN];
+	char tempLocation[MAX_STR_LEN];
+	int tempNumTheaters = 0; 
+	int tempNumMovies = 0; 
+	int tempNumShowTimes = 0; 
+
+	RETURN_ZERO(pBranch);
+
+	
+	fscanf(fp, "%d", &pBranch->serialNum);
+	myGets(tempName, MAX_STR_LEN, fp);
+	pBranch->name = getDynStr(tempName); 
+	myGets(tempLocation, MAX_STR_LEN, fp);
+	pBranch->cityLocation = getDynStr(tempLocation);
+	fscanf(fp, "%d", &pBranch->numOfTheaters);
+	fscanf(fp, "%d", &pBranch->numOfMovies);
+	fscanf(fp, "%d", &pBranch->numOfShowTime);
+
+	pBranch->moviesArr = (Movie**)malloc(pBranch->numOfMovies * sizeof(Movie*));
+	RETURN_ZERO(pBranch->moviesArr);
+	pBranch->theaterArray = (Theater*)malloc(pBranch->numOfTheaters * sizeof(Theater));
+	RETURN_ZERO(pBranch->theaterArray);
+	pBranch->showTimeArray = (ShowTime*)malloc(pBranch->numOfShowTime * sizeof(ShowTime)); 
+	RETURN_ZERO(pBranch->showTimeArray);
+
+
+	for (int i = 0; i < pBranch->numOfMovies; i++)
+	{
+		tempMovie = loadMovieFromTxtFile(fp);
+		if (!tempMovie) {
+			// Free all previously allocated Movies
+			for (int j = 0; j < i; j++) { 
+				free(pBranch->moviesArr[j]->name); // Assuming 'name' was dynamically allocated 
+				free(pBranch->moviesArr[j]); 
+			}
+			free(pBranch->moviesArr); // Free the array itself 
+			return 0; 
+		}
+		pBranch->moviesArr[i] = tempMovie; 
+		
+	}
+
+	for (int i = 0; i < pBranch->numOfTheaters; i++)
+	{
+
+		Theater* tempTheater = loadTheaterFromTxtFile(fp);
+		RETURN_AND_FREE(pBranch->theaterArray);
+	
+		pBranch->theaterArray[i] = *tempTheater;
+		free(tempTheater); 
+	}
+
+	for (int i = 0; i < pBranch->numOfShowTime; i++) 
+	{
+
+		ShowTime* tempShowTime = loadShowTimeFromTxtFile(pBranch, fp);
+		if (!tempShowTime)
+		{
+			free(pBranch->showTimeArray);
+			return 0;
+		}
+		pBranch->showTimeArray[i] = *tempShowTime;  
+		free(tempShowTime);
+	}
+
+	return 1;
+}
+
+
+ShowTime* loadShowTimeFromTxtFile(Branch* pBranch, FILE* fp)
+{
+	char tempMovieName[MAX_STR_LEN];
+	char* tempName;
+	int serialNum=0;
+	Date tempDate;
+	Time tempTime;
+	int tempTheaterNum = 0;
+	ShowTime* pShowTime = (ShowTime*)malloc(sizeof(ShowTime));
+	RETURN_NULL(pShowTime);
+
+	fscanf(fp, "%d", &pShowTime->serialNum); 
+
+	myGets(tempMovieName, MAX_STR_LEN, fp);
+	tempName = getDynStr(tempMovieName);
+	pShowTime->theMovie = *findMovieByName(pBranch,tempName);
+
+	fscanf(fp, "%d", &tempTheaterNum);
+	pShowTime->theTheater = *findTheaterByNum(pBranch, tempTheaterNum);
+
+	skipLine(fp);   
+	skipLine(fp);  
+	 tempDate = *loadDateFromTxtFile(fp);
+	 tempTime = *loadTimeFromTxtFile(fp);
+
+	 pShowTime->date = tempDate; // here
+	 pShowTime->time = tempTime; // here
+
+	 return pShowTime;
+
 }
 
 
@@ -309,14 +406,6 @@ void freeMovieArr(Branch* branch)
 	generalArrayFunction(branch->moviesArr, branch->numOfMovies, sizeof(Movie*), freeMovie);
 	
 }
-
-
-
-
-
-//void readMoviesFromTextfile(Movie* pMovie, FILE* fp)
-//{	
-//}
 
 
 

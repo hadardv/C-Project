@@ -4,6 +4,8 @@
 
 #include "Movie.h"
 #include "general.h"
+#include "fileHelper.h"
+#include "macros.h"
 
 
 
@@ -39,6 +41,16 @@ eGenre getMovieGenre()
 	return (eGenre)choice;
 }
 
+eGenre convertStringToGenre(const char* genreStr) {
+	for (int i = 0; i < numberOfTypes; i++) {
+		if (strcmp(genreStr, MovieTypeStr[i]) == 0) {
+			return (eGenre)i;
+		}
+	}
+	return -1; // In case the genre is not found, consider handling this error appropriately
+}
+
+
 int	saveMovieToFile(const Movie* pMovie, FILE* fp)
 {
 	if (fwrite(pMovie, sizeof(Movie), 1, fp) != 1)
@@ -50,13 +62,56 @@ int	saveMovieToFile(const Movie* pMovie, FILE* fp)
 	return 1;
 }
 
+Movie* loadMovieFromTxtFile(FILE* fp)
+{
+	char tempN[MAX_STR_LEN];
+	char genreStr[MAX_STR_LEN]; 
+	int tempDuration=0;
+	Movie* pMovie = (Movie*)malloc(sizeof(Movie)); 
+	RETURN_NULL(pMovie);
+	 
+
+	myGets(tempN, MAX_STR_LEN, fp);
+	pMovie->name = getDynStr(tempN); 
+
+	// Reading genres line
+	if (!myGets(genreStr, MAX_STR_LEN, fp)) { 
+		printf("Error reading movie genre\n");
+		return NULL;
+	}
+
+	// Split genreStr into individual genres and convert them
+	char* token = strtok(genreStr, " "); // Splitting by space to get the first genre 
+	int genreCount = 0;
+	while (token != NULL && genreCount < MAX_GENRES) {
+		eGenre tempGenre = convertStringToGenre(token);
+		if (tempGenre == -1) {
+			printf("Invalid genre: %s\n", token);
+			return NULL;
+		}
+		pMovie->genreArr[genreCount++] = tempGenre;
+
+		token = strtok(NULL, " ");
+	}
+	if (genreCount > 0) {
+		pMovie->genreType = pMovie->genreArr[0]; 
+	}
+
+
+	fscanf(fp, "%d", &pMovie->duration);
+	pMovie->ageLimit = setAgeLimit(pMovie->genreArr);
+
+	return pMovie; 
+
+}
+
 char* getMovieName(Movie** movieArr, int numOfMovies)
 {
 	char* name;
 	int flag = 0;
 	do {
 		name = getStrExactName("Enter the movie name\n");
-		if (!name) return 0;
+		RETURN_NULL(name);
 		flag = isMovieUnique(movieArr, numOfMovies, name);
 	} while (!flag);
 	return name;
@@ -110,10 +165,10 @@ void printMovieV(void* pMovie)
 
 void printGenres(const eGenre* genreArr)
 {
-	// this function doesn't print action because its 0!!! 
+	 
 	for (int i = 0; i < MAX_GENRES; i++)
 	{
-		if (genreArr[i] != -1)
+		if (genreArr[i] != -1 ) 
 			printf("%s\t",MovieTypeStr[genreArr[i]]); 
 	}
 }

@@ -13,7 +13,11 @@ typedef struct
 
 void	getDate(Date* pDate);
 int		checkDate(char* date, Date* pDate);
+Date stringToDate(const char* dateString);
+
 int		saveDateToBinaryFile(const Date* pDate, FILE* fp);
+Date*	loadDateFromTxtFile(FILE* fp);
+
 void	printDate(const Date* pDate);
 
 #endif

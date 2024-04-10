@@ -4,6 +4,7 @@
 #include <math.h>
 #include "Theater.h"
 #include "general.h"
+#include "fileHelper.h"
 
 void initTheater(Theater* theater, Theater* theaterArr, int theaterCount)
 {
@@ -42,6 +43,35 @@ void initTheater(Theater* theater, Theater* theaterArr, int theaterCount)
 	}
 }
 
+void setCapacity(Theater* pTheater)
+{
+	int rows = 0, cols = 0;
+	if (!(strcmp(TheaterTypeStr[pTheater->type], "Regular")))
+	{
+		rows = 10; cols = 10;
+	}
+
+	if (!(strcmp(TheaterTypeStr[pTheater->type], "VIP")))
+	{
+		rows = 5; cols = 5;
+	}
+
+	if (!(strcmp(TheaterTypeStr[pTheater->type], "3D")))
+	{
+		rows = 7; cols = 7;
+	}
+	pTheater->maximumCapacity = rows * cols;
+}
+
+eTheaterType convertStringToTheaterType(const char* typeStr) {
+	for (int i = 0; i < eNumOfTypes; i++) {
+		if (strcmp(typeStr, TheaterTypeStr[i]) == 0) {
+			return (eTheaterType)i;
+		}
+	}
+	return -1; // Indicating failure to find a match
+}
+
 int	saveTheaterToFile(const Theater* pTheater, FILE* fp)
 {
 
@@ -51,6 +81,33 @@ int	saveTheaterToFile(const Theater* pTheater, FILE* fp)
 		return 0;
 	}
 	return 1;
+}
+
+Theater* loadTheaterFromTxtFile(FILE* fp)
+{
+	char typeStr[MAX_STR_LEN];
+	Theater* pTheater = (Theater*)malloc(sizeof(Theater));
+	if (!pTheater)
+		return NULL;
+
+	fscanf(fp, "%d", &pTheater->theaterNumber); 
+	fgets(typeStr, sizeof(typeStr), fp); // Dummy read to consume the rest of the line 
+
+	// Read the theater type as a string
+	if (fgets(typeStr, sizeof(typeStr), fp) == NULL) {
+		printf("Error reading theater type\n");
+		return NULL;
+	}
+	typeStr[strcspn(typeStr, "\n")] = 0;
+	eTheaterType tempType = convertStringToTheaterType(typeStr); 
+	if (tempType == -1) { 
+		printf("Invalid theater type: %s\n", typeStr); 
+		return NULL;
+	}
+	pTheater->type = tempType;
+	setCapacity(pTheater);
+
+	return pTheater;
 }
 
 
@@ -77,7 +134,6 @@ char* setSeat(Theater* theater)
 
 int checkIfSeatIsEmpty(Theater* theater,int wantedRow,int wantedCol) 
 {
-	//// need here to check bounds
 	int rows = (int)sqrt(theater->maximumCapacity);
 	int cols = rows;
 	if (theater->seats[wantedRow-1][wantedCol-1] == 0)
@@ -114,14 +170,14 @@ void printSeatMap(const Theater* theater) {
 
 	// Print column headers
 	for (int col = 0; col < cols; col++) {
-		printf("%d ", col + 1); // Column numbers start from 1
+		printf("%d ", col + 1); 
 	}
 	printf("\n");
 
 	for (int i = 0; i < rows; i++) {
-		printf("%d ", i + 1); // Print the row number on the left, starting from 1
+		printf("%d ", i + 1); 
 		for (int j = 0; j < cols; j++) {
-			// Assuming 0 for unoccupied and any other value for occupied seats
+			
 			if (theater->seats[i][j] == 0) {
 				printf("_ "); // Unoccupied seat
 			}
@@ -129,7 +185,7 @@ void printSeatMap(const Theater* theater) {
 				printf("X "); // Occupied seat
 			}
 		}
-		printf("\n"); // New line at the end of each row
+		printf("\n"); 
 	}
 }
 

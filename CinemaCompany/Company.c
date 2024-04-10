@@ -5,14 +5,14 @@
 #include "Company.h"
 #include "general.h"
 #include "fileHelper.h"
+#include "macros.h"
 
 
 void initCompany(Company* comp)
 {
 	printf("--------------------\n");
 	comp->name = getStrExactName("Enter Company name:\n");
-	if (!L_init(&comp->branchList)) return ;
-	//comp->numOfBranches = 0; 
+	if (!L_init(&comp->branchList)) return ; 
 	comp->ticketSales = NULL;
 }
 
@@ -66,10 +66,8 @@ int saveCompanyToBinaryFile(const Company* comp, const char* fileName)
 	FILE* fp;
 
 	fp = fopen(fileName, "w");
-	if (!fp) {
-		printf("Error open company file to write\n");
-		return 0;
-	}
+	RETURN_ZERO(fp);
+	
 
 	fprintf(fp, "%s\n", comp->name);
 	 
@@ -102,10 +100,9 @@ int saveCompanyToTxtFile(const Company* comp, const char* fileName)
 	FILE* fp;
 
 	fp = fopen(fileName, "w");
-	if (!fp) {
-		printf("Error open company file to write\n");
-		return 0;
-	}
+	
+	RETURN_ZERO(fp);
+
 
 	fprintf(fp, "%s\n", comp->name);
 
@@ -133,6 +130,59 @@ int saveCompanyToTxtFile(const Company* comp, const char* fileName)
 
 }
 
+int loadCompanyFromTxtFile(Company* comp, const char* fileName)
+{
+	FILE* fp; 
+
+	fp = fopen(fileName, "r");
+	RETURN_ZERO(fp);
+	
+	L_init(&comp->branchList); 
+	int count;
+	char compName[MAX_STR_LEN];
+
+	myGets(compName, MAX_STR_LEN, fp); 
+	comp->name = getDynStr(compName); 
+
+	fscanf(fp, "%d", &count); 
+	//clean the buffer
+	fgetc(fp); 
+
+	Branch* pBranch;
+	for (int i = 0; i < count; i++) 
+	{
+		pBranch = (Branch*)calloc(1, sizeof(Branch)); 
+		if (!pBranch)
+			break;
+		if (!loadBranchFromTxtFile(pBranch, fp)) 
+		{
+			printf("Error loading Branch from file\n");
+			fclose(fp); 
+			free(pBranch); 
+			L_free(&comp->branchList,freeBranch);
+			return 0;
+		}
+		if (!addNewBranchToList(&comp->branchList, pBranch))
+			printf("Error adding the branch to the list\n");
+	}
+	return 1;
+}
+
+int addNewBranchToList(LIST* branchList, Branch* pBranch) {
+	if (!branchList || !pBranch) {
+		return 0;
+	}
+	NODE* tempN = &(branchList->head); 
+	while (tempN->next != NULL) {
+		tempN = tempN->next;
+	}
+	if (!L_insert(tempN, pBranch))
+		return 0;
+
+	return 1;
+}
+
+
 int		getBranchescount(const Company* comp)
 {
 	int count = 0;
@@ -149,7 +199,8 @@ int		getBranchescount(const Company* comp)
 
 int addBranch(Company* comp) {
 	Branch* pBranch = (Branch*)malloc(sizeof(Branch));
-	if (!pBranch) return 0;
+	RETURN_ZERO(pBranch);
+
 	initBranch(pBranch, comp);
 
 	if (!L_insert(&(comp->branchList.head), pBranch)) { 
@@ -181,7 +232,6 @@ int removeBranch(Company* comp) {
 		return 0; 
 	}
 
-	// If we're removing the first node
 	if (prevN == NULL) {
 		comp->branchList.head = *tempN->next;
 	}
@@ -189,7 +239,7 @@ int removeBranch(Company* comp) {
 		prevN->next = tempN->next;
 	}
 
-	L_delete(&tempN->key, freeBranch);
+	L_delete(tempN->key, freeBranch);
 
 	return 1; 
 }
@@ -346,10 +396,10 @@ Branch* findBranchByCity(const Company* comp, char* city)
 {
 	NODE* node = L_find(comp->branchList.head.next, &city, compareBranchCity); 
 	if (node != NULL) { 
-		return (Branch*)node->key; // If the node is found, return the branch  
+		return (Branch*)node->key; 
 	}
 	else {
-		return NULL; // If the node is not found, return NULL  
+		return NULL; 
 	}
 }
 
