@@ -39,6 +39,17 @@ eGenre getMovieGenre()
 	return (eGenre)choice;
 }
 
+int	saveMovieToFile(const Movie* pMovie, FILE* fp)
+{
+	if (fwrite(pMovie, sizeof(Movie), 1, fp) != 1)
+	{
+		printf("Error write date\n");
+		return 0;
+	}
+
+	return 1;
+}
+
 char* getMovieName(Movie** movieArr, int numOfMovies)
 {
 	char* name;
@@ -91,6 +102,12 @@ void printMovie(const Movie* pMovie)
 	printf("Duration: %d minuets \tAge Limit: %d years\n", pMovie->duration, pMovie->ageLimit);
 }
 
+void printMovieV(void* pMovie)
+{
+	const Movie* temp = *(Movie**)pMovie;
+	printMovie(temp);
+}
+
 void printGenres(const eGenre* genreArr)
 {
 	// this function doesn't print action because its 0!!! 
@@ -99,4 +116,9 @@ void printGenres(const eGenre* genreArr)
 		if (genreArr[i] != -1)
 			printf("%s\t",MovieTypeStr[genreArr[i]]); 
 	}
+}
+
+void freeMovie(Movie* pMovie)
+{
+	free(pMovie->name);
 }

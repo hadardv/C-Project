@@ -5,9 +5,9 @@
 
 
 char* getStrExactName(const char* msg);
-char* myGets(char* buffer, int size);
+char* myGets(char* buffer, int size, FILE* source);
 char* getDynStr(char* str);
-void generalArrayFunction(void* array, int numberOfElements, int sizeOfElement, void(*function)(void*));
+void generalArrayFunction(void* arr, int size, int typeSize, void(*func)(void* element));
 int isAllLettersOrSpaces(const char* str);
 
 #endif

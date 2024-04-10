@@ -16,4 +16,5 @@ typedef struct
 void setPrice(Ticket* pTicket);
 void checkForDiscount(Ticket* pTicket);
 int checkAgeLimit(Ticket* pTicket);
+void printReceipt(Ticket* pTicket);
 #endif 

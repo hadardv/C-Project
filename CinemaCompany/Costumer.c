@@ -59,3 +59,53 @@ int isValidId(int id)
 	}
 }
 
+int saveCostumerToFile(const Costumer* costumer, const char* fileName) {
+	FILE* fp = fopen(fileName, "wb"); 
+	if (!fp) {
+		printf("Failed to open file for writing.\n");
+		return 0; 
+	}
+
+	if (fwrite(costumer, sizeof(Costumer), 1, fp) != 1) {
+		printf("Failed to write costumer to file.\n");
+		fclose(fp);
+		return 0; 
+	}
+
+	fclose(fp); 
+	return 1; 
+}
+
+//int saveCompressedCostumerToFile(const Costumer* costumer, const char* fileName) {
+//	unsigned long compressedSize = calculateCompressedSize(sizeof(Costumer)); // Pseudocode
+//	unsigned char* compressedData = malloc(compressedSize);
+//
+//	// Compress the data
+//	if (compressData((unsigned char*)costumer, sizeof(Costumer), compressedData, &compressedSize) != COMPRESSION_SUCCESS) { // Pseudocode
+//		free(compressedData);
+//		return 0;
+//	}
+//
+//	// Now write the compressed data to a file
+//	FILE* fp = fopen(fileName, "wb");
+//	if (!fp) {
+//		free(compressedData);
+//		return 0;
+//	}
+//
+//	if (fwrite(compressedData, compressedSize, 1, fp) != 1) {
+//		fclose(fp);
+//		free(compressedData);
+//		return 0;
+//	}
+//
+//	fclose(fp);
+//	free(compressedData);
+//	return 1;
+//}
+
+void printCostumer(const Costumer* costumer)
+{
+	printf("%d\n", costumer->id);
+}
+

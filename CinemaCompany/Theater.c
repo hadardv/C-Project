@@ -24,19 +24,8 @@ void initTheater(Theater* theater, Theater* theaterArr, int theaterCount)
 		rows = 7; cols = 7;
 	}
 
-
-	// Allocate the rows
-	//theater->seats = (int**)calloc(rows, sizeof(int*));
-	//if (theater->seats == NULL) return;
-
-	//// Allocate each row
-	//for (int i = 0; i < rows; i++) {
-	//	theater->seats[i] = (int*)calloc(cols, sizeof(int));
-	//	if (theater->seats[i] == NULL) return; 
-	//}
 	theater->seats = (int**)malloc(rows * sizeof(int*));
 	if (theater->seats == NULL) {
-		// Handle allocation failure
 		return;
 	}
 
@@ -44,15 +33,26 @@ void initTheater(Theater* theater, Theater* theaterArr, int theaterCount)
 	for (int i = 0; i < rows; i++) {
 		theater->seats[i] = (int*)calloc(cols, sizeof(int)); // calloc initializes to 0
 		if (theater->seats[i] == NULL) {
-			// Handle allocation failure
-			// Remember to free previously allocated rows before returning
 			return;
 		}
-
+		
 		theater->maximumCapacity = rows * cols;
 		theater->theaterNumber = theaterCount + 1;
+
 	}
 }
+
+int	saveTheaterToFile(const Theater* pTheater, FILE* fp)
+{
+
+	if (fwrite(pTheater, sizeof(Theater), 1, fp) != 1)
+	{
+		printf("Error write date\n");
+		return 0;
+	}
+	return 1;
+}
+
 
 char* setSeat(Theater* theater)
 {
@@ -66,10 +66,10 @@ char* setSeat(Theater* theater)
 		printf("Choose a seat, type desired row and col \n");
 		printSeatMap(theater);
 		scanf("%d %d", &wantedRow, &wantedCol);
-	} while (!checkIfSeatIsEmpty(theater, wantedRow-1, wantedCol-1));
+	} while (!checkIfSeatIsEmpty(theater, wantedRow, wantedCol));
 	
 	sprintf(theSeat, "Row: %d, Col: %d", wantedRow, wantedCol);
-	theater->seats[wantedRow-1][wantedCol-1] = 1; /// problem is here
+	theater->seats[wantedRow-1][wantedCol-1] = 1; 
 
 	return theSeat; 
 
@@ -125,7 +125,7 @@ void printSeatMap(const Theater* theater) {
 			if (theater->seats[i][j] == 0) {
 				printf("_ "); // Unoccupied seat
 			}
-			else {
+			else if(theater->seats[i][j] == 1) {
 				printf("X "); // Occupied seat
 			}
 		}
@@ -138,6 +138,11 @@ void printSeatMap(const Theater* theater) {
 void printTheater(const Theater* theater)
 {
 	printf("Number of theater: %d\tType of theater: %s\n", theater->theaterNumber, TheaterTypeStr[theater->type]);
+}
+
+void printTheaterV(void* val)
+{
+	printTheater((const Theater*)val);
 }
 
 void freeTheater(Theater* theater)

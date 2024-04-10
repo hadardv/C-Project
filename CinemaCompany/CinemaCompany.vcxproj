@@ -132,6 +132,7 @@
     <ClCompile Include="Company.c" />
     <ClCompile Include="Costumer.c" />
     <ClCompile Include="Date.c" />
+    <ClCompile Include="fileHelper.c" />
     <ClCompile Include="general.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="main.c" />
@@ -147,6 +148,7 @@
     <ClInclude Include="Costumer.h" />
     <ClInclude Include="Date.h" />
     <ClInclude Include="def.h" />
+    <ClInclude Include="fileHelper.h" />
     <ClInclude Include="general.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="Movie.h" />

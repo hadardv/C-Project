@@ -1,0 +1,26 @@
+yes planet
+1
+Branch Serial Number: 1
+Branch Name: yes planet tlv
+Number Of Theaters: 2
+Number Of Movies: 2
+Number Of Show Times: 2
+Movies:
+	Movie name: Shrek
+	Movie genres: Kids
+Duration: 90
+	Movie name: Avatar
+	Movie genres: Fantasy
+Duration: 90
+	Theater number: 1
+Theater type: VIP
+	Theater number: 2
+Theater type: Regular
+	Movie name: Shrek
+Theater: 1 type: VIP
+Date: 11.11.2024
+Time: 12:12
+	Movie name: Avatar
+Theater: 2 type: Regular
+Date: 13.12.2025
+Time: 12:13

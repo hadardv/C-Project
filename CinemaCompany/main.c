@@ -6,13 +6,17 @@
 typedef enum
 {
 	eAddBranch, eAddTheater, eAddMovie, eAddShowTime, ePrintCompany,
-	ePrintBranchData, eBuyTicket, eNofOptions
+	ePrintBranchData, eBuyTicket,eRemoveBranch,eSortShowTime,eSearchShowTime, eNofOptions
 } eMenuOptions;
 
 const char* str[eNofOptions] = { "Add Branch","Add Theater","Add Movie","Add Show Time",
-								"Print Company","Print Branch Data","Buy Ticket" };
+								"Print Company","Print Branch Data","Buy Ticket","Remove Branch","Sort Show Time" ,"Search Show Time" };
 
 #define EXIT			-1
+#define COMPANY_TXT_FILE_NAME "cinema_company.txt"
+#define COMPANY_BINARY_FILE_NAME "cinema_company.bin"
+
+
 int menu();
 
 int main() {
@@ -23,6 +27,8 @@ int main() {
 
 	int option;
 	int stop = 0;
+	int num = 0;
+
 
 
 	do
@@ -59,7 +65,22 @@ int main() {
 			break;
 
 		case eBuyTicket:
-			buyTicket(&cinemaCompany); 
+			printf("How many tickets do you want to buy?");
+			scanf("%d", &num);
+			for (int i=0; i<num; i++)
+				buyTicket(&cinemaCompany); 
+			break;
+
+		case eRemoveBranch:
+				removeBranch(&cinemaCompany);
+			break;
+
+		case eSortShowTime:
+			sortShowTime(&cinemaCompany);
+			break;
+
+		case eSearchShowTime:
+			findShowTime(&cinemaCompany);
 			break;
 
 		case EXIT:
@@ -72,6 +93,9 @@ int main() {
 			break;
 		}
 	} while (!stop);
+
+	saveCompanyToTxtFile(&cinemaCompany, COMPANY_TXT_FILE_NAME);
+	saveCompanyToBinaryFile(&cinemaCompany, COMPANY_BINARY_FILE_NAME);
 
 
 }

@@ -13,7 +13,7 @@ void	getTime(Time* pTime)
 
 	do {
 		printf("Enter movie time hh%cmm\t",TIME_SEPERATOR);
-		myGets(time, MAX_STR_LEN);
+		myGets(time, MAX_STR_LEN, stdin);
 		ok = checkTime(time, pTime);
 		if (!ok)
 			printf("Error try again\n");
@@ -35,6 +35,18 @@ int	 checkTime(char* time, Time* pTime)
 	
 
 	return 1;
+}
+
+int		saveTimeToFile(const Time* pTime, FILE* fp)
+{
+	if (fwrite(pTime, sizeof(Time), 1, fp) != 1)
+	{
+		printf("Error write date\n");
+		return 0;
+	}
+
+	return 1;
+
 }
 
 void printTime(const Time* pTime)

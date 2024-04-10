@@ -12,9 +12,10 @@ typedef struct
 
 }Time;
 
-void	getTime(Time* pDate); 
-int		checkTime(char* time, Time* pDate); 
-void	printTime(const Time* pDate); 
+void	getTime(Time* pTime); 
+int		checkTime(char* time, Time* pTime); 
+int		saveTimeToFile(const Time* pTime, FILE* fp);
+void	printTime(const Time* pTime); 
 
 
 #endif 

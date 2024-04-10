@@ -4,6 +4,7 @@
 #include <ctype.h> 
 #include "Company.h"
 #include "general.h"
+#include "fileHelper.h"
 
 
 void initCompany(Company* comp)
@@ -11,7 +12,7 @@ void initCompany(Company* comp)
 	printf("--------------------\n");
 	comp->name = getStrExactName("Enter Company name:\n");
 	if (!L_init(&comp->branchList)) return ;
-	comp->numOfBranches = 0; 
+	//comp->numOfBranches = 0; 
 	comp->ticketSales = NULL;
 }
 
@@ -34,6 +35,7 @@ void initBranch(Branch* branch, Company* pComp)
 	branch->showTimeArray = NULL;
 	branch->numOfTheaters = 0;
 	branch->numOfMovies = 0;
+	branch->numOfShowTime = 0;
 }
 
 int initTicket(Ticket* pTicket,Company* comp,Branch* pBranch)
@@ -59,6 +61,91 @@ int initTicket(Ticket* pTicket,Company* comp,Branch* pBranch)
 	return 1;
 }
 
+int saveCompanyToBinaryFile(const Company* comp, const char* fileName)
+{
+	FILE* fp;
+
+	fp = fopen(fileName, "w");
+	if (!fp) {
+		printf("Error open company file to write\n");
+		return 0;
+	}
+
+	fprintf(fp, "%s\n", comp->name);
+	 
+	int count = getBranchescount(comp);
+	fprintf(fp, "%d\n", count); 
+	if (count > 0)
+	{
+		NODE* pN = comp->branchList.head.next; //first Node
+
+		Branch* pTemp; 
+		while (pN != NULL) 
+		{
+			pTemp = (Branch*)pN->key ;
+			if (!saveBranchToBinaryFile(pTemp, fp))
+			{
+				printf("Error write branch\n");
+				fclose(fp);
+				return 0;
+			}
+			pN = pN->next;
+		}
+	}
+	fclose(fp); 
+	return 1;
+
+}
+
+int saveCompanyToTxtFile(const Company* comp, const char* fileName)
+{
+	FILE* fp;
+
+	fp = fopen(fileName, "w");
+	if (!fp) {
+		printf("Error open company file to write\n");
+		return 0;
+	}
+
+	fprintf(fp, "%s\n", comp->name);
+
+	int count = getBranchescount(comp);
+	fprintf(fp, "%d\n", count);
+	if (count > 0)
+	{
+		NODE* pN = comp->branchList.head.next; //first Node
+
+		Branch* pTemp;
+		while (pN != NULL)
+		{
+			pTemp = (Branch*)pN->key;
+			if (!saveBranchToTxtFile(pTemp, fp))
+			{
+				printf("Error write branch\n");
+				fclose(fp);
+				return 0;
+			}
+			pN = pN->next;
+		}
+	}
+	fclose(fp);
+	return 1;
+
+}
+
+int		getBranchescount(const Company* comp)
+{
+	int count = 0;
+	NODE* pN = comp->branchList.head.next; //first Node
+
+	while (pN != NULL)
+	{
+		count++;
+		pN = pN->next;
+	}
+	return count;
+}
+
 
 int addBranch(Company* comp) {
 	Branch* pBranch = (Branch*)malloc(sizeof(Branch));
@@ -74,6 +161,40 @@ int addBranch(Company* comp) {
 
 }
 
+int removeBranch(Company* comp) {
+	printf("which branch do you want to remove? removing a branch will delete its data.\n");
+	Branch* pBranch = findABranch(comp);
+	if (pBranch == NULL) {
+		printf("Branch not found.\n");
+		return 0; 
+	}
+
+	NODE* tempN = &comp->branchList.head; 
+	NODE* prevN = NULL;
+	while (tempN != NULL && tempN->key != pBranch) {
+		prevN = tempN;
+		tempN = tempN->next;
+	}
+
+	if (tempN == NULL) { 
+		printf("Branch not found in the list.\n");
+		return 0; 
+	}
+
+	// If we're removing the first node
+	if (prevN == NULL) {
+		comp->branchList.head = *tempN->next;
+	}
+	else {
+		prevN->next = tempN->next;
+	}
+
+	L_delete(&tempN->key, freeBranch);
+
+	return 1; 
+}
+
+
 char* setName(Branch* branch, Company* pComp)
 {
 	int totalLength = (int)strlen(pComp->name) + (int)strlen(branch->cityLocation) + 2;
@@ -86,6 +207,122 @@ char* setName(Branch* branch, Company* pComp)
 	strcat(tempName, branch->cityLocation); 
 	 
 	return tempName; 
+}
+
+void	sortShowTime(Company* comp)
+{
+	Branch* pBranch = findABranch(comp); 
+	printf("How would you like to sort the array?\n");
+	sortType type = getSortType();
+	if (type == 0) qsort(pBranch->showTimeArray, pBranch->numOfShowTime, sizeof(ShowTime), compareShowTimeByDate); // sort by date
+	if (type == 1) qsort(pBranch->showTimeArray, pBranch->numOfShowTime, sizeof(ShowTime), compareShowTimeByMovieName); // sort by destination code 
+	if (type == 2) qsort(pBranch->showTimeArray, pBranch->numOfShowTime, sizeof(ShowTime), compareShowTimeByTime); // sort by date  
+
+}
+
+void	findShowTime(const Company* comp)
+{
+	Branch* pBranch = findABranch(comp);
+	ShowTime* pShowTime = (ShowTime*)malloc(sizeof(ShowTime)); 
+	if (!pShowTime) return ;
+	ShowTime* tempShowTime = (ShowTime*)malloc(sizeof(ShowTime));
+	if (!tempShowTime) return ;
+	sortType type = getSortType();
+	if (type == 0)
+	{
+		printf("enter date to search:\n");
+		Date* d = (Date*)malloc(sizeof(Date));
+		if (!d) return ;
+		getDate(d);
+		tempShowTime->date = *d;
+		pShowTime = bsearch(tempShowTime,pBranch->showTimeArray,pBranch->numOfShowTime, sizeof(ShowTime), compareShowTimeByDate);
+	}
+
+	if (type == 1)
+	{
+		
+		Movie* movieTemp = (Movie*)malloc(sizeof(Movie));
+		if (!movieTemp) return ;
+		movieTemp->name = getStrExactName("enter movie name to search : \n");
+		tempShowTime->theMovie = *movieTemp;
+		pShowTime = bsearch(tempShowTime, pBranch->showTimeArray, pBranch->numOfShowTime, sizeof(ShowTime), compareShowTimeByMovieName);
+
+	}
+	if (type == 2)
+	{
+
+		printf("enter time to search:\n");
+		Time* t = (Time*)malloc(sizeof(Time));
+		if (!t) return ;
+		getTime(t);
+		tempShowTime->time = *t;
+		pShowTime = bsearch(tempShowTime, pBranch->showTimeArray, pBranch->numOfShowTime, sizeof(ShowTime), compareShowTimeByTime);
+	}
+	if (!pShowTime)
+	{
+		printf("Show time was not found\n");
+		return;
+	}
+	else
+	{
+		printf("Show time was found\n");
+		printShowTime(pShowTime);
+	}
+	if (type == 3) printf("Canno't search in the unsorted array"); // don't sort
+	
+}
+
+sortType getSortType()
+{
+	int option;
+	printf("\n\n");
+	do {
+		printf("Choose one of the options\n");
+		for (int i = 0; i < nOfTypes; i++)
+			printf("%d for %s\n", i, sortTilte[i]);
+		scanf("%d", &option);
+	} while (option < 0 || option >= nOfTypes);
+	getchar();
+	return (sortType)option;
+}
+
+int compareShowTimeByDate(const void* v1, const void* v2) {
+	const ShowTime s1 = *(const ShowTime*)v1; 
+	const ShowTime s2 = *(const ShowTime*)v2;
+
+	// Compare year
+	if (s1.date.year != s2.date.year) {
+		return s1.date.year - s2.date.year;
+	}
+	// If year is the same, compare month
+	if (s1.date.month != s2.date.month) {
+		return s1.date.month - s2.date.month;
+	}
+	// If month is also the same, compare day
+	return s1.date.day - s2.date.day;
+}
+
+
+int compareShowTimeByMovieName(const void* v1, const void* v2)
+{
+	const ShowTime s1 = *(const ShowTime*)v1;
+	const ShowTime s2 = *(const ShowTime*)v2;
+
+	return strcmp(s1.theMovie.name,s2.theMovie.name);
+}
+
+
+int compareShowTimeByTime(const void* v1, const void* v2)
+{
+	const ShowTime s1 = *(const ShowTime*)v1;
+	const ShowTime s2 = *(const ShowTime*)v2;
+
+	// Compare hour
+	if (s1.time.hour != s2.time.hour) {
+		return s1.time.hour - s2.time.hour;
+	}
+	// If hour is the same, compare minuets
+	return s1.time.minuets - s2.time.minuets;
 }
 
 
@@ -105,7 +342,7 @@ int compareBranchCity(const void* branch, const void* city) {
 	return strcmp(pBranch->cityLocation, pCity);
 }
 
-Branch* findBranchByCity(Company* comp, char* city)
+Branch* findBranchByCity(const Company* comp, char* city)
 {
 	NODE* node = L_find(comp->branchList.head.next, &city, compareBranchCity); 
 	if (node != NULL) { 
@@ -117,7 +354,7 @@ Branch* findBranchByCity(Company* comp, char* city)
 }
 
 
-Branch* findBranchBySN(Company* comp, int serialNumber) {
+Branch* findBranchBySN(const Company* comp, int serialNumber) {
 	NODE* node = L_find(comp->branchList.head.next, &serialNumber, compareBranchSerialNum);
 	if (node != NULL) { 
 		return (Branch*)node->key; // If the node is found, return the branch 
@@ -127,7 +364,7 @@ Branch* findBranchBySN(Company* comp, int serialNumber) {
 	}
 }
 
-Branch* findABranch(Company* comp) {
+Branch* findABranch(const Company* comp) {
 	printf("Choose a branch from the list, type its serial number\n");
 	printCompany(comp);
 	Branch* temp = NULL;
@@ -213,7 +450,6 @@ int addMovie(Company* comp)
 	Movie* pMovie = pBranch->moviesArr[pBranch->numOfMovies];  // Pointer to the new movie
 	initMovie(pMovie, pBranch->moviesArr, pBranch->numOfMovies);
 	pBranch->numOfMovies++;
-	//pBranch->moviesArr[pBranch->numOfMovies] = pMovie; 
 	return 1; 
 }
 
@@ -223,7 +459,6 @@ int addShowTime(Company* comp)
 
 	if (pBranch->showTimeArray == NULL)
 	{
-		//pBranch->showTimeArray = NULL;
 		pBranch->numOfShowTime = 0;
 	}
 
@@ -244,11 +479,11 @@ int addShowTime(Company* comp)
 
 void buyTicket(Company* comp)
 {
+
 	Branch* pBranch = findABranch(comp); 
 
 	if (pBranch->showTimeArray == NULL) 
 	{
-		//pBranch->showTimeArray = NULL;
 		pBranch->numOfShowTime = 0; 
 	} 
 
@@ -283,19 +518,45 @@ void buyTicket(Company* comp)
 	}
 
 	printSeatMap(&pTicket->theShowTime.theTheater); 
-
+	printf("---- Receipt ----\n");
+	printReceipt(pTicket);
 
 }
 
-ShowTime chooseShowTime(Company* comp,Branch* pBranch)
+ShowTime chooseShowTime(const Company* comp, const Branch* pBranch)
 {
-	//Branch* pBranch = findABranch(comp);
-	ShowTime* pShowTime = findAShowTime(pBranch); 
+	ShowTime* pShowTime = findAShowTime(pBranch);
 	return *pShowTime;
 
 }
 
-void printCompany(Company* comp) {
+//void doesBestSeller(Company* comp)
+//{
+//	NODE* tempN = &comp->branchList.head;
+//	Branch* tempBranch = tempN->next->key;
+//	int sales = 0;
+//	for (int i = 0; i < comp->numOfBranches; i++)
+//	{
+//		for(int i=0;i<tempBranch->numOfMovies;i++)
+//			sales = numOfTicketsForAMovie(tempBranch->moviesArr[i],comp);
+//
+//	}
+//}
+//
+//int numOfTicketsForAMovie(Movie* pMovie, Company* comp)
+//{
+//	int counter = 0;
+//	for (int i = 0; i < comp->numOfTickets; i++)
+//	{
+//		if (!strcmp(comp->ticketSales[i].theShowTime.theMovie.name, pMovie->name))
+//			counter++;
+//	}
+//	return counter;
+//}
+
+
+
+void printCompany(const Company* comp) {
 	printf("%s\n", comp->name);
 	printf("------------------\n");
 	NODE* current = comp->branchList.head.next;
@@ -305,7 +566,7 @@ void printCompany(Company* comp) {
 	}
 }
 
-void printSpecificBranch(Company* comp)
+void printSpecificBranch(const Company* comp)
 {
 	Branch* pBranch = findABranch(comp);
 	printDataBranch(pBranch); 

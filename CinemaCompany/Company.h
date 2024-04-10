@@ -5,11 +5,15 @@
 #include "Branch.h"
 #include "Ticket.h"
 
+typedef enum { date, movieName, showTimeTime, none, nOfTypes } sortType;
+static const char* sortTilte[nOfTypes] = { "Date", "Movie Name", "Show time time" , "none" };
+
 typedef struct
 {
+	sortType    type;
 	LIST branchList; 
 	char* name;
-	int numOfBranches;
+	//int numOfBranches;
 	Ticket* ticketSales;
 	int numOfTickets;
 
@@ -18,22 +22,43 @@ typedef struct
 void initCompany(Company* comp);  
 void initBranch(Branch* branch, Company* comp);
 int initTicket(Ticket* pTicket, Company* comp,Branch* pBranch);
-int addBranch(Company* comp);
-int addTheater(Company* comp);
-int addMovie(Company* comp);
-int addShowTime(Company* comp);
-void buyTicket(Company* comp);
+sortType getSortType();
 char* setName(Branch* branch, Company* pComp);
-int compareBranchSerialNum(void* data, void* serialNum);
+
+int addBranch(Company* comp);
+int addMovie(Company* comp);
+int addTheater(Company* comp);
+int addShowTime(Company* comp);
+
+int removeBranch(Company* comp);
+void buyTicket(Company* comp);
+int	getBranchescount(const Company* comp);
+
+int saveCompanyToBinaryFile(const Company* comp, const char* fileName);
+int saveCompanyToTxtFile(const Company* comp, const char* fileName);
+
+
+int compareShowTimeByDate(const void* v1, const void* v2);
+int compareShowTimeByMovieName(const void* v1, const void* v2);
+int compareShowTimeByTime(const void* v1, const void* v2);
+int compareBranchSerialNum(const void* data, const void* serialNum);
 int compareBranchCity(const void* branch, const void* city);
-Branch* findBranchBySN(Company* comp, int serialNumber);
-Branch* findBranchByCity(Company* comp, char* city);
-Branch* findABranch(Company* comp);
-void printCompany(Company* comp); 
-void printSpecificBranch(Company* comp);
-ShowTime chooseShowTime(Company* comp,Branch* pBranch);
+
+Branch* findBranchBySN(const Company* comp, int serialNumber);
+Branch* findBranchByCity(const Company* comp, char* city);
+Branch* findABranch(const Company* comp);
+void findShowTime(const Company* comp);
+
+void sortShowTime(Company* comp);
+ShowTime chooseShowTime(const Company* comp, const Branch* pBranch);
+
+void printCompany(const Company* comp);
+void printSpecificBranch(const Company* comp);
+
 void freeCompany(Company* comp); 
 
+//int numOfTicketsForAMovie(Movie* pMovie, Company* comp);
+//void doesBestSeller(Movie** movieArr, int numOfMovies, Company* comp);
 #endif 
 
 

@@ -44,5 +44,17 @@ int checkAgeLimit(Ticket* pTicket)
 	return 1;
 }
 
+void printReceipt(Ticket* pTicket)
+{
+	printf("Costumer id: ");
+	printCostumer(&pTicket->theCostumer);
+	printf("Price: %f\n",pTicket->price);
+	printf("Seat number: %s\n",pTicket->seatNum);
+	printf("The show time:");
+	printShowTime(&pTicket->theShowTime);
+
+
+}
+
 
 

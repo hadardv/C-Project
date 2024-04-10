@@ -10,7 +10,7 @@ char* getStrExactName(const char* msg)
 	char* str;
 	char temp[MAX_STR_LEN];
 	printf("%s", msg);
-	myGets(temp, MAX_STR_LEN);
+	myGets(temp, MAX_STR_LEN, stdin);
 
 	str = getDynStr(temp);
 	return str;
@@ -26,13 +26,13 @@ char* getDynStr(char* str)
 	return theStr;
 }
 
-char* myGets(char* buffer, int size)
+char* myGets(char* buffer, int size, FILE* source)
 {
 	char* ok;
 	if (buffer != NULL && size > 0)
 	{
-		do { //skip only '\n' strings
-			ok = fgets(buffer, size, stdin);
+		do {
+			ok = fgets(buffer, size, source);
 		} while (ok && ((strlen(buffer) <= 1) && (isspace(buffer[0]))));
 		if (ok)
 		{
@@ -47,14 +47,12 @@ char* myGets(char* buffer, int size)
 	return NULL;
 }
 
-void generalArrayFunction(void* array, int numberOfElements, int sizeOfElement, void(*function)(void*))
-{
-	void* element = (char*)array;
 
-	for (int i = 0; i < numberOfElements; i++) {
-		void* element = (char*)array + i * sizeOfElement;
-		function(element);
-	}
+void generalArrayFunction(void* arr, int size, int typeSize, void(*func)(void* element))
+{
+	for (int i = 0; i < size; i++)
+		func((char*)(arr)+i * typeSize);
+
 }
 
 int isAllLettersOrSpaces(const char* str) {

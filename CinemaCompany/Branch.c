@@ -5,6 +5,7 @@
 #include "Branch.h"
 #include "Company.h"
 #include "general.h"
+#include "fileHelper.h"
 
 
 void initShowTime(ShowTime* showTime, Branch* branch)
@@ -20,7 +21,105 @@ void initShowTime(ShowTime* showTime, Branch* branch)
 
 }
 
-Movie* findAMovie(Branch* branch)
+int saveBranchToBinaryFile(const Branch* pBranch, FILE* fp) {
+
+	if (!writeIntToFile(pBranch->serialNum, fp, "Error writing serialNum"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!writeStringToFile(pBranch->name, fp, "Error writing name"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!writeStringToFile(pBranch->cityLocation, fp, "Error writing cityLocation"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!writeIntToFile(pBranch->numOfTheaters, fp, "Error writing numOfTheaters"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!writeIntToFile(pBranch->numOfMovies, fp, "Error writing numOfMovies"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!writeIntToFile(pBranch->numOfShowTime, fp, "Error writing numOfShowTime"))
+	{
+		fclose(fp);
+		return 0;
+	}
+
+	 
+	for (int i = 0; i < pBranch->numOfMovies; i++) {
+		if (!saveMovieToFile(pBranch->moviesArr[i], fp)) {
+			printf("Error writing movie\n");
+			fclose(fp);
+			return 0;
+		}
+	}
+
+	for (int i = 0; i < pBranch->numOfTheaters; i++) {
+		if (!saveTheaterToFile(&pBranch->theaterArray[i], fp)) {
+			printf("Error writing theater\n");
+			fclose(fp); 
+			return 0;
+		}
+	}
+
+	for (int i = 0; i < pBranch->numOfShowTime; i++) {
+		if (!saveShowTimeToFile(&pBranch->showTimeArray[i], fp)) {
+			printf("Error writing showtime\n");
+			fclose(fp); 
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int saveBranchToTxtFile(const Branch* pBranch, FILE* fp)
+{
+	// Write simple fields with fprintf
+	fprintf(fp, "Branch Serial Number: %d\n", pBranch->serialNum); 
+	fprintf(fp, "Branch Name: %s\n", pBranch->name); 
+	fprintf(fp, "Number Of Theaters: %d\n", pBranch->numOfTheaters); 
+	fprintf(fp, "Number Of Movies: %d\n", pBranch->numOfMovies); 
+	fprintf(fp, "Number Of Show Times: %d\n", pBranch->numOfShowTime); 
+
+	fprintf(fp, "Movies:\n");
+	for (int i = 0; i < pBranch->numOfMovies; i++) {
+		fprintf(fp, "\tMovie name: %s\n", pBranch->moviesArr[i]->name);
+		for (int j = 0; j < MAX_GENRES; j++)
+		{
+			if (pBranch->moviesArr[i]->genreArr[j] != -1)
+				fprintf(fp, "\tMovie genres: %s ", MovieTypeStr[pBranch->moviesArr[i]->genreArr[j]]);
+		}
+		fprintf(fp, "Duration: %d\n", pBranch->moviesArr[i]->duration);
+	}
+
+	for (int i = 0; i < pBranch->numOfTheaters; i++) {
+		fprintf(fp, "\tTheater number: %d\n", pBranch->theaterArray[i].theaterNumber);
+		fprintf(fp, "Theater type: %s\n", TheaterTypeStr[pBranch->theaterArray[i].type]);
+	}
+
+	for (int i = 0; i < pBranch->numOfShowTime; i++) {
+		fprintf(fp, "\tMovie name: %s\n", pBranch->showTimeArray[i].theMovie.name);
+		fprintf(fp, "Theater: %d type: %s\n", pBranch->showTimeArray[i].theTheater.theaterNumber, TheaterTypeStr[pBranch->theaterArray[i].type]);
+		fprintf(fp, "Date: %d.%d.%d\n", pBranch->showTimeArray[i].date.day, pBranch->showTimeArray[i].date.month, pBranch->showTimeArray[i].date.year); 
+		fprintf(fp, "Time: %d:%d\n", pBranch->showTimeArray[i].time.hour, pBranch->showTimeArray[i].time.minuets); 
+
+	}
+
+	
+	return 1; // Return success
+}
+
+
+Movie* findAMovie(const Branch* branch)
 {
 	if (branch->numOfMovies < 1)
 	{
@@ -33,15 +132,15 @@ Movie* findAMovie(Branch* branch)
 	Movie* temp = NULL;
 	char movieName[MAX_STR_LEN];
 	do {
-		fgets(movieName, MAX_STR_LEN, stdin); // Use fgets to read the input
-		movieName[strcspn(movieName, "\n")] = 0; // Remove the trailing newline character
+		fgets(movieName, MAX_STR_LEN, stdin); 
+		movieName[strcspn(movieName, "\n")] = 0; 
 		temp = findMovieByName(branch, movieName);
 		if (!temp) printf("There is not such a movie, try again\n");
 		} while (temp == NULL);
 		return temp;
 	}
 
-ShowTime* findAShowTime(Branch* branch)
+ShowTime* findAShowTime(const Branch* branch)
 {
 	if (branch->numOfShowTime < 1)
 	{
@@ -56,12 +155,13 @@ ShowTime* findAShowTime(Branch* branch)
 	do {
 		scanf("%d", &sn);
 		temp = findShowTimeByNum(branch, sn);
-		if (!temp) printf("There is not such a movie, try again\n");
+		if (!temp) 
+			printf("There is not such a movie, try again\n");
 	} while (temp == NULL);
 	return temp;
 }
 
-ShowTime* findShowTimeByNum(Branch* branch, int showTimeNum)
+ShowTime* findShowTimeByNum(const Branch* branch, int showTimeNum)
 {
 	for (int i = 0; i < branch->numOfShowTime; i++)
 	{
@@ -72,7 +172,7 @@ ShowTime* findShowTimeByNum(Branch* branch, int showTimeNum)
 
 
 
-Movie* findMovieByName(Branch* branch, char* name) 
+Movie* findMovieByName(const Branch* branch, const char* name)
 {
 	for (int i = 0; i < branch->numOfMovies; i++)
 	{
@@ -81,7 +181,7 @@ Movie* findMovieByName(Branch* branch, char* name)
 	return NULL; 
 }
 
-Theater* findATheater(Branch* branch)
+Theater* findATheater(const Branch* branch)
 {
 	if (branch->numOfTheaters < 1)
 	{
@@ -100,7 +200,7 @@ Theater* findATheater(Branch* branch)
 	return temp;
 }
 
-Theater* findTheaterByNum(Branch* branch, int theaterNum)
+Theater* findTheaterByNum(const Branch* branch, const int theaterNum)
 {
 	for (int i = 0; i < branch->numOfTheaters; i++)
 	{
@@ -137,47 +237,77 @@ void printDataBranch(const Branch* branch) {
 
 void printTheaterArr(const Branch* branch)
 {
-	printf("The theaters are: \n");
-	for (int i = 0; i < branch->numOfTheaters; i++)
-	{
-		printTheater(&branch->theaterArray[i]);
-	}
+	printf("\nThe theaters are: \n");
+	generalArrayFunction(branch->theaterArray, branch->numOfTheaters, sizeof(Theater), printTheaterV);
 
 }
 
 void printMoviesArr(const Branch* branch)
 {
-	for (int i = 0; i < branch->numOfMovies; i++)
-	{
-		printMovie(branch->moviesArr[i]);
-	}
+	printf("\nThe Movies are: \n");
+	generalArrayFunction(branch->moviesArr, branch->numOfMovies, sizeof(Movie*), printMovieV);
+
 }
 
 void printShowTimeArr(const Branch* branch)
 {
+	printf("\nThe show times are: \n");
+	generalArrayFunction(branch->showTimeArray, branch->numOfShowTime, sizeof(ShowTime), printShowTimeV);
+}
 
-	for (int i = 0; i < branch->numOfShowTime; i++)
-	{
-		printf("The Show Times to the movie are:\n");
-		printShowTime(&branch->showTimeArray[i]);
+
+void freeBranch(Branch* branch) {
+	if (branch == NULL) return;
+
+	// Free the name
+	if (branch->name != NULL) {
+		free(branch->name);
+		branch->name = NULL;
 	}
+
+	// Free the city location
+	if (branch->cityLocation != NULL) {
+		free(branch->cityLocation);
+		branch->cityLocation = NULL;
+	}
+
+	// Free each Theater in the theaterArray
+	if (branch->theaterArray != NULL) {
+		freeTheaterArr(branch);
+		branch->theaterArray = NULL;
+	}
+
+	// Free each Movie pointer in moviesArr
+	if (branch->moviesArr != NULL) {
+		freeMovieArr(branch);
+		branch->moviesArr = NULL;
+	}
+
+	// Free each ShowTime in the showTimeArray
+	if (branch->showTimeArray != NULL) {
+		freeTheaterArr(branch);
+		branch->showTimeArray = NULL; 
+	}
+
+	free(branch);
 }
 
-
-
-void freeBranch(Branch* branch)
-{
-	free(branch->name);
-	free(branch->cityLocation);
-}
 
 void freeTheaterArr(Branch* branch)
 {
-	for (int i = 0; i < branch->numOfTheaters; i++)
-	{
-		freeTheater(&branch->theaterArray[i]);
-	}
-	free(branch->theaterArray);
+	generalArrayFunction(branch->theaterArray, branch->numOfTheaters, sizeof(Theater), freeTheater);
+	
+}
+
+void freeShowTimeArr(Branch* branch)
+{
+	generalArrayFunction(branch->showTimeArray, branch->numOfShowTime, sizeof(ShowTime), freeShowTime);
+}
+
+void freeMovieArr(Branch* branch)
+{
+	generalArrayFunction(branch->moviesArr, branch->numOfMovies, sizeof(Movie*), freeMovie);
+	
 }
 
 

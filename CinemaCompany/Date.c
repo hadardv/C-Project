@@ -16,7 +16,7 @@ void getDate(Date* pDate)
 	do {
 		printf("Enter Movie Date dd%cmm%cyyyy  minimum year %d\t",
 			SEPERATOR, SEPERATOR, MIN_YEAR);
-		myGets(date, MAX_STR_LEN);
+		myGets(date, MAX_STR_LEN, stdin);
 		ok = checkDate(date, pDate);
 		if (!ok)
 			printf("Error try again\n");
@@ -42,6 +42,18 @@ int	 checkDate(char* date, Date* pDate)
 	pDate->year = year;
 
 	return 1;
+}
+
+int		saveDateToBinaryFile(const Date* pDate, FILE* fp)
+{
+	if (fwrite(pDate, sizeof(Date), 1, fp) != 1)
+	{
+		printf("Error write date\n");
+		return 0;
+	}
+
+	return 1;
+
 }
 
 void printDate(const Date* pDate)
