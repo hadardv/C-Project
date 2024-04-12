@@ -33,7 +33,9 @@ Theater* findTheaterByNum(const Branch* branch, const int theaterNum);
 int saveBranchToBinaryFile(const Branch* pBranch, FILE* fp);
 int saveBranchToTxtFile(const Branch* pBranch, FILE* fp);
 int loadBranchFromTxtFile(Branch* pBranch, FILE* fp);
+int loadBranchFromBinaryFile(Branch* pBranch, FILE* fp);
 ShowTime* loadShowTimeFromTxtFile(Branch* pBranch, FILE* fp);
+ShowTime* loadShowTimeFromBinaryFile(Branch* pBranch, FILE* fp);
 
 
 void printBranch(const Branch* branch);

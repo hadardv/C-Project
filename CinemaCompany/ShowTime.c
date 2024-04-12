@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include "ShowTime.h"
 #include "general.h"
+#include "macros.h"
+#include "fileHelper.h"
 
 void printShowTime(const ShowTime* showTime)
 {
@@ -19,21 +21,38 @@ void printShowTimeV(void* val)
 	printShowTime((const ShowTime*)val);
 }
 
-int	saveShowTimeToFile(const ShowTime* pShowTime, FILE* fp)
+int	saveShowTimeToBinaryFile(const ShowTime* pShowTime, FILE* fp)
 {
-	if (fwrite(pShowTime, sizeof(ShowTime), 1, fp) != 1)
+    if (!pShowTime || !fp) return 0;
+
+	if (!writeIntToFile(pShowTime->serialNum, fp, "Error writing theater number"))
 	{
-		printf("Error write date\n");
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp); 
 	}
-	return 1;
+
+	if (!writeStringToFile(pShowTime->theMovie.name, fp, "Error writing movie name"))
+	{
+		COLSE_FILE_RETURN_ZERO(fp);
+	}
+
+	if (!writeIntToFile(pShowTime->theTheater.theaterNumber, fp, "Error writing theater number"))
+	{
+		COLSE_FILE_RETURN_ZERO(fp);
+	}
+
+	saveDateToBinaryFile(&pShowTime->date, fp);
+	//fwrite(&pShowTime->date, sizeof(pShowTime->date), 1, fp); 
+	saveTimeToBinaryFile(&pShowTime->time, fp);
+
+	//fwrite(&pShowTime->time, sizeof(pShowTime->time), 1, fp); 
+
+    return 1;
 }
 
 
 void freeShowTime(ShowTime* showTime)
 {
 	freeMovie(&showTime->theMovie);
-	freeTheater(&showTime->theTheater);
 }
 
 

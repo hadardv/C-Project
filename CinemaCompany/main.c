@@ -42,7 +42,7 @@ int main() {
 			break;
 
 		case eLoadFromBinaryFile:
-			if (!addBranch(&cinemaCompany)) 
+			if (!loadCompanyFromBinaryFile(&cinemaCompany,COMPANY_BINARY_FILE_NAME))
 				printf("Error adding Branch\n");
 			break;
 
@@ -75,7 +75,7 @@ int main() {
 			break;
 
 		case eBuyTicket:
-			printf("How many tickets do you want to buy?");
+			printf("How many tickets do you want to buy?\n");
 			scanf("%d", &num);
 			for (int i=0; i<num; i++)
 				buyTicket(&cinemaCompany); 
@@ -104,8 +104,8 @@ int main() {
 		}
 	} while (!stop);
 
-	saveCompanyToTxtFile(&cinemaCompany, COMPANY_TXT_FILE_NAME);
-	saveCompanyToBinaryFile(&cinemaCompany, COMPANY_BINARY_FILE_NAME);
+	//saveCompanyToTxtFile(&cinemaCompany, COMPANY_TXT_FILE_NAME); 
+	saveCompanyToBinaryFile(&cinemaCompany, COMPANY_BINARY_FILE_NAME);  
 
 
 }

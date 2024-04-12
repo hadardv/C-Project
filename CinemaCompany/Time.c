@@ -4,6 +4,7 @@
 #include "Time.h"
 #include "general.h"
 #include "macros.h"
+#include "fileHelper.h"
 
 #define TIME_SEPERATOR ':'
 
@@ -38,16 +39,42 @@ int	 checkTime(char* time, Time* pTime)
 	return 1;
 }
 
-int		saveTimeToFile(const Time* pTime, FILE* fp)
+int		saveTimeToBinaryFile(const Time* pTime, FILE* fp)
 {
-	if (fwrite(pTime, sizeof(Time), 1, fp) != 1)
+	if (!writeIntToFile(pTime->hour, fp, "Error writing hour to file\n"))
 	{
-		printf("Error write date\n");
+		fclose(fp);
 		return 0;
 	}
-
+	if (!writeIntToFile(pTime->minuets, fp, "Error writing minuets to file\n"))
+	{
+		fclose(fp);
+		return 0;
+	}
 	return 1;
+}
 
+Time* loadTimeFromBinaryFile(FILE* fp)
+{
+	Time* pTime = (Time*)malloc(sizeof(Time));
+	if (!pTime)
+	{
+		fclose(fp);
+		return NULL;
+	}
+
+	if (!readIntFromFile(&pTime->hour, fp, "Error reading hour\n"))
+	{
+		fclose(fp);
+		return NULL;
+	}
+	if (!readIntFromFile(&pTime->minuets, fp, "Error reading minuets\n"))
+	{
+		fclose(fp); 
+		return NULL;
+	}
+
+	return pTime;
 }
 
 Time* loadTimeFromTxtFile(FILE* fp) {

@@ -51,16 +51,62 @@ eGenre convertStringToGenre(const char* genreStr) {
 }
 
 
-int	saveMovieToFile(const Movie* pMovie, FILE* fp)
+int	saveMovieToBinaryFile(const Movie* pMovie, FILE* fp)
 {
-	if (fwrite(pMovie, sizeof(Movie), 1, fp) != 1)
+	if (!writeStringToFile(pMovie->name, fp, "Error writing movie name"))
 	{
-		printf("Error write date\n");
-		return 0;
+		COLSE_FILE_RETURN_ZERO(fp);
 	}
 
-	return 1;
+		//fwrite(&pMovie->genreType, sizeof(pMovie->genreType), 1, fp);
+
+		for (int i = 0; i < MAX_GENRES; i++) {
+			fwrite(&pMovie->genreArr[i], sizeof(pMovie->genreArr[i]), 1, fp);
+		}
+
+		if (!writeIntToFile(pMovie->duration, fp, "Error writing duration"))
+		{
+			COLSE_FILE_RETURN_ZERO(fp);
+		}
+		
+
+		return 1;
 }
+
+Movie* loadMovieFromBinaryFile(FILE* fp) 
+{
+	if (!fp) return NULL;
+
+	Movie* pMovie = (Movie*)malloc(sizeof(Movie));
+	if (!pMovie) return NULL;
+
+	// Read the movie name
+	pMovie->name = readStringFromFile(fp,"Error reading movie name from file\n");
+	if (!pMovie->name) {
+		free(pMovie);
+		return NULL;
+	}
+	// Initialize genres
+	for (int i = 0; i < MAX_GENRES; i++) {
+		pMovie->genreArr[i] = -1;
+	}
+
+	// Read genres as separate enum values
+	int genreIndex;
+	for (int i = 0; i < MAX_GENRES; i++) {
+		fread(&genreIndex, sizeof(genreIndex), 1, fp);
+		if (genreIndex >= 0 && genreIndex < numberOfTypes) {
+			pMovie->genreArr[i] = genreIndex;
+		}
+	}
+	pMovie->genreType = pMovie->genreArr[0]; // Assuming the first genre is the primary genre 
+
+	fread(&pMovie->duration, sizeof(pMovie->duration), 1, fp); 
+	pMovie->ageLimit = setAgeLimit(pMovie->genreArr); 
+
+	return pMovie; 
+}
+
 
 Movie* loadMovieFromTxtFile(FILE* fp)
 {
@@ -70,7 +116,7 @@ Movie* loadMovieFromTxtFile(FILE* fp)
 	Movie* pMovie = (Movie*)malloc(sizeof(Movie)); 
 	RETURN_NULL(pMovie);
 	 
-
+	memset(pMovie->genreArr, -1, sizeof(pMovie->genreArr)); 
 	myGets(tempN, MAX_STR_LEN, fp);
 	pMovie->name = getDynStr(tempN); 
 

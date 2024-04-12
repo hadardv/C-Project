@@ -22,7 +22,7 @@ typedef struct
 void printShowTime(const ShowTime* showTime);
 void printShowTimeV(void* val);
 
-int	saveShowTimeToFile(const ShowTime* pShowTime, FILE* fp);
+int	saveShowTimeToBinaryFile(const ShowTime* pShowTime, FILE* fp);
 
 void freeShowTime(ShowTime* showTime);
 

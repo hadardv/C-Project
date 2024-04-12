@@ -30,7 +30,8 @@ int isMovieUnique(Movie** movieArr, int numOfMovies,char* name);
 int setAgeLimit(eGenre* genreArr);
 int setDuration();
 
-int	saveMovieToFile(const Movie* pMovie, FILE* fp);
+int	saveMovieToBinaryFile(const Movie* pMovie, FILE* fp);
+Movie* loadMovieFromBinaryFile(FILE* fp);
 Movie* loadMovieFromTxtFile(FILE* fp);
 
 void printMovie(const Movie* pMovie);

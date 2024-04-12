@@ -96,6 +96,7 @@ int	  readIntFromFile(int* pVal, FILE* fp, const char* msg)
 }
 
 
+
 char* readDynStringFromTextFile(FILE* fp)
 {
 	char temp[MAX_STR_LEN];

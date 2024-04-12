@@ -48,12 +48,22 @@ int	 checkDate(char* date, Date* pDate)
 
 int		saveDateToBinaryFile(const Date* pDate, FILE* fp)
 {
-	if (fwrite(pDate, sizeof(Date), 1, fp) != 1)
+
+	if (!writeIntToFile(pDate->day, fp, "Error writing day to file"))
 	{
-		printf("Error write date\n");
+		fclose(fp);
 		return 0;
 	}
-
+	if (!writeIntToFile(pDate->month, fp, "Error writing month to file"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!writeIntToFile(pDate->year, fp, "Error writing year to file"))
+	{
+		fclose(fp);
+		return 0;
+	}
 	return 1;
 
 }
@@ -69,6 +79,34 @@ Date* loadDateFromTxtFile(FILE* fp) {
 	myGets(dateStr, MAX_STR_LEN, fp);
 	tempDateStr = getDynStr(dateStr);
 	checkDate(tempDateStr, pDate);
+
+	return pDate;
+}
+
+Date* loadDateFromBinaryFile(FILE* fp)
+{
+	Date* pDate = (Date*)malloc(sizeof(Date));
+	if (!pDate)
+	{
+		fclose(fp);
+		return NULL;
+	}
+
+	if (!readIntFromFile(&pDate->day, fp, "Error reading day\n"))
+	{
+		fclose(fp);
+		return NULL;
+	}
+	if (!readIntFromFile(&pDate->month, fp, "Error reading month\n"))
+	{
+		fclose(fp);
+		return NULL;
+	}
+	if (!readIntFromFile(&pDate->year, fp, "Error reading year\n"))
+	{
+		fclose(fp);
+		return NULL;
+	}
 
 	return pDate;
 }

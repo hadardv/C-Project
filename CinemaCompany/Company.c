@@ -13,7 +13,7 @@ void initCompany(Company* comp)
 	printf("--------------------\n");
 	comp->name = getStrExactName("Enter Company name:\n");
 	if (!L_init(&comp->branchList)) return ; 
-	comp->ticketSales = NULL;
+	/*comp->ticketSales = NULL;*/
 }
 
 void initBranch(Branch* branch, Company* pComp)
@@ -61,39 +61,42 @@ int initTicket(Ticket* pTicket,Company* comp,Branch* pBranch)
 	return 1;
 }
 
-int saveCompanyToBinaryFile(const Company* comp, const char* fileName)
-{
+int saveCompanyToBinaryFile(const Company* comp, const char* fileName) {
 	FILE* fp;
 
-	fp = fopen(fileName, "w");
-	RETURN_ZERO(fp);
+	fp = fopen(fileName, "wb");
+
+	if (!fp) {
+		printf("Error opening file\n");
+		return 0;
+	}
+
+	int nameLength = (int)strlen(comp->name);
+	fwrite(&nameLength, sizeof(nameLength), 1, fp);
+	fwrite(comp->name, sizeof(char), nameLength, fp);
+
 	
-
-	fprintf(fp, "%s\n", comp->name);
-	 
 	int count = getBranchescount(comp);
-	fprintf(fp, "%d\n", count); 
-	if (count > 0)
-	{
-		NODE* pN = comp->branchList.head.next; //first Node
+	fwrite(&count, sizeof(count), 1, fp);
 
-		Branch* pTemp; 
-		while (pN != NULL) 
-		{
-			pTemp = (Branch*)pN->key ;
-			if (!saveBranchToBinaryFile(pTemp, fp))
-			{
-				printf("Error write branch\n");
+	if (count > 0) {
+		NODE* pN = comp->branchList.head.next;
+
+		while (pN != NULL) {
+			Branch* pTemp = (Branch*)pN->key;
+			if (!saveBranchToBinaryFile(pTemp, fp)) {
+				printf("Error writing branch\n");
 				fclose(fp);
 				return 0;
 			}
 			pN = pN->next;
 		}
 	}
-	fclose(fp); 
-	return 1;
 
+	fclose(fp);
+	return 1;
 }
+
 
 int saveCompanyToTxtFile(const Company* comp, const char* fileName)
 {
@@ -168,6 +171,58 @@ int loadCompanyFromTxtFile(Company* comp, const char* fileName)
 	return 1;
 }
 
+int loadCompanyFromBinaryFile(Company* comp, const char* fileName) {
+	FILE* fp;
+
+	fp = fopen(fileName, "rb"); // Open in binary read mode
+	if (!fp) {
+		printf("Error opening company file\n");
+		return 0;
+	}
+
+	L_init(&comp->branchList);
+	int count;
+
+	comp->name = readStringFromFile(fp, "Error reading name from file\n");
+	//fread(comp->name, sizeof(char), MAX_STR_LEN, fp); // Read company name
+
+	// Read the number of branches
+	if (!readIntFromFile(&count, fp, "Error reading number of branches\n"))
+	{
+		free(comp->name);
+		fclose(fp);
+		return 0;
+	}
+
+	//fread(&count, sizeof(int), 1, fp);
+
+	Branch* pBranch;
+	for (int i = 0; i < count; i++) {
+		pBranch = (Branch*)calloc(1, sizeof(Branch));
+		if (!pBranch) {
+			fclose(fp);
+			L_free(&comp->branchList, freeBranch); // Assume freeBranch is a function to free Branch memory
+			return 0;
+		}
+
+		if (!loadBranchFromBinaryFile(pBranch, fp)) { // Assume this function is modified to read from binary
+			printf("Error loading Branch from file\n");
+			fclose(fp);
+			free(pBranch);
+			L_free(&comp->branchList, freeBranch);
+			return 0;
+		}
+
+		if (!addNewBranchToList(&comp->branchList, pBranch)) {
+			printf("Error adding the branch to the list\n");
+		}
+	}
+
+	fclose(fp);
+	return 1;
+}
+
+
 int addNewBranchToList(LIST* branchList, Branch* pBranch) {
 	if (!branchList || !pBranch) {
 		return 0;
@@ -201,19 +256,53 @@ int addBranch(Company* comp) {
 	Branch* pBranch = (Branch*)malloc(sizeof(Branch));
 	RETURN_ZERO(pBranch);
 
-	initBranch(pBranch, comp);
+	//initBranch(pBranch, comp);
 
-	if (!L_insert(&(comp->branchList.head), pBranch)) { 
-		free(pBranch); 
-		return 0;
+	//if (!L_insert(&(comp->branchList.head), pBranch)) { 
+	//	free(pBranch); 
+	//	return 0;
+	//}
+	//L_print(&comp->branchList, printBranch);
+	//return 1;
+
+	initBranch(pBranch, comp); // Assume initializes the Branch
+
+	// Check if the list is empty
+	if (comp->branchList.head.next == NULL) {
+		// If the list is empty, insert the branch at the beginning
+		comp->branchList.head.next = (NODE*)malloc(sizeof(NODE));
+		if (!comp->branchList.head.next) {
+			printf("Memory allocation for new NODE failed.\n");
+			free(pBranch);
+			return 0;
+		}
+		comp->branchList.head.next->key = pBranch;
+		comp->branchList.head.next->next = NULL;
 	}
-	L_print(&comp->branchList, printBranch);
+	else {
+		// If the list is not empty, traverse to the last node
+		NODE* current = comp->branchList.head.next;
+		while (current->next != NULL) {
+			current = current->next;
+		}
+		// Insert the new branch at the end of the list
+		current->next = (NODE*)malloc(sizeof(NODE));
+		if (!current->next) {
+			printf("Memory allocation for new NODE failed.\n");
+			free(pBranch);
+			return 0;
+		}
+		current->next->key = pBranch;
+		current->next->next = NULL;
+	}
+
+	L_print(&comp->branchList, printBranch); // Assuming this function correctly prints the list
 	return 1;
 
 }
 
 int removeBranch(Company* comp) {
-	printf("which branch do you want to remove? removing a branch will delete its data.\n");
+	/*printf("which branch do you want to remove? removing a branch will delete its data.\n");
 	Branch* pBranch = findABranch(comp);
 	if (pBranch == NULL) {
 		printf("Branch not found.\n");
@@ -239,9 +328,77 @@ int removeBranch(Company* comp) {
 		prevN->next = tempN->next;
 	}
 
-	L_delete(tempN->key, freeBranch);
+	L_delete(&tempN->key, freeBranch);
 
-	return 1; 
+	return 1; */
+
+	// this works -- need to check how to delete the head
+
+	/*printf("Which branch do you want to remove? Removing a branch will delete its data.\n");
+	Branch* targetBranch = findABranch(comp);
+	if (targetBranch == NULL) {
+		printf("Branch not found.\n");
+		return 0;
+	}
+
+	NODE* current = comp->branchList.head.next; 
+	NODE* prev = &(comp->branchList.head); 
+
+	while (current != NULL && current->key != targetBranch) {
+		prev = current;
+		current = current->next;
+	}
+
+	if (current == NULL) {
+		printf("Branch not found in the list.\n");
+		return 0;
+	}
+
+	prev->next = current->next;
+
+	freeBranch((Branch*)current->key); 
+	free(current);
+
+	return 1;*/
+
+	printf("Which branch do you want to remove? Removing a branch will delete its data.\n");
+	Branch* targetBranch = findABranch(comp); // Assumes this function correctly identifies the branch to remove
+	if (targetBranch == NULL) {
+		printf("Branch not found.\n");
+		return 0;
+	}
+
+	// Special handling for the case where the first node is to be removed
+	if (comp->branchList.head.next != NULL && comp->branchList.head.next->key == targetBranch) {
+		NODE* temp = comp->branchList.head.next;
+		comp->branchList.head.next = temp->next; // Update the head to point to the second node
+		freeBranch((Branch*)temp->key);
+		free(temp);
+		return 1;
+	}
+
+	NODE* current = comp->branchList.head.next;
+	NODE* prev = comp->branchList.head.next; // Start with the first actual node
+
+	// Traverse to find the target node, starting from the second node
+	while (current != NULL && current->key != targetBranch) {
+		prev = current; 
+		current = current->next; 
+	}
+
+	if (current == NULL) {
+		printf("Branch not found in the list.\n");
+		return 0;
+	}
+
+	// Remove the node from the list
+	prev->next = current->next; 
+
+	// Free the branch and the node
+	freeBranch((Branch*)current->key); 
+	free(current); 
+
+	return 1;
 }
 
 
@@ -433,7 +590,7 @@ Branch* findABranch(const Company* comp) {
 			}
 		}
 		else {
-			printf("Invalid input. Please enter a valid serial number.\n");
+			printf("Please enter a valid serial number.\n");
 		}
 	} while (temp == NULL);
 
@@ -543,28 +700,11 @@ void buyTicket(Company* comp)
 		return;
 	}
 
-	if (comp->ticketSales == NULL)
+	Ticket* pTicket = (Ticket*)malloc(sizeof(Ticket));
+	if (!initTicket(pTicket, comp, pBranch))
 	{
-		comp->numOfTickets = 0;
-	}
-
-	size_t newSize = (size_t)(comp->numOfTickets + 1) * sizeof(Ticket);
-	Ticket* temp = realloc(comp->ticketSales, newSize);
-	if (!temp) {
-		printf("Failed to allocate memory for new ticket.\n");
+		printf("Error buying ticket\n");
 		return;
-	}
-	comp->ticketSales = temp;
-
-	Ticket* pTicket = &comp->ticketSales[comp->numOfTickets]; 
-	if (initTicket(pTicket, comp, pBranch))
-	{
-		comp->ticketSales[comp->numOfTickets] = *pTicket;
-		comp->numOfTickets++;
-	}
-	else
-	{
-		printf("Order cancelled\n");
 	}
 
 	printSeatMap(&pTicket->theShowTime.theTheater); 
@@ -579,32 +719,6 @@ ShowTime chooseShowTime(const Company* comp, const Branch* pBranch)
 	return *pShowTime;
 
 }
-
-//void doesBestSeller(Company* comp)
-//{
-//	NODE* tempN = &comp->branchList.head;
-//	Branch* tempBranch = tempN->next->key;
-//	int sales = 0;
-//	for (int i = 0; i < comp->numOfBranches; i++)
-//	{
-//		for(int i=0;i<tempBranch->numOfMovies;i++)
-//			sales = numOfTicketsForAMovie(tempBranch->moviesArr[i],comp);
-//
-//	}
-//}
-//
-//int numOfTicketsForAMovie(Movie* pMovie, Company* comp)
-//{
-//	int counter = 0;
-//	for (int i = 0; i < comp->numOfTickets; i++)
-//	{
-//		if (!strcmp(comp->ticketSales[i].theShowTime.theMovie.name, pMovie->name))
-//			counter++;
-//	}
-//	return counter;
-//}
-
-
 
 void printCompany(const Company* comp) {
 	printf("%s\n", comp->name);

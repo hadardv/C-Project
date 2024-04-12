@@ -5,6 +5,7 @@
 #include "Theater.h"
 #include "general.h"
 #include "fileHelper.h"
+#include "macros.h"
 
 void initTheater(Theater* theater, Theater* theaterArr, int theaterCount)
 {
@@ -43,6 +44,39 @@ void initTheater(Theater* theater, Theater* theaterArr, int theaterCount)
 	}
 }
 
+int** setTheaterSeats(Theater* theater)
+{
+	int rows = 0, cols = 0;
+	if (!(strcmp(TheaterTypeStr[theater->type], "Regular")))
+	{
+		rows = 10; cols = 10;
+	}
+
+	if (!(strcmp(TheaterTypeStr[theater->type], "VIP")))
+	{
+		rows = 5; cols = 5;
+	}
+
+	if (!(strcmp(TheaterTypeStr[theater->type], "3D")))
+	{
+		rows = 7; cols = 7;
+	}
+
+	theater->seats = (int**)malloc(rows * sizeof(int*));
+	if (theater->seats == NULL) {
+		return NULL; 
+	}
+
+	// Allocate columns for each row
+	for (int i = 0; i < rows; i++) {
+		theater->seats[i] = (int*)calloc(cols, sizeof(int)); // calloc initializes to 0
+		if (theater->seats[i] == NULL) {
+			return NULL; 
+		}
+	}
+	return theater->seats;
+}
+
 void setCapacity(Theater* pTheater)
 {
 	int rows = 0, cols = 0;
@@ -72,16 +106,34 @@ eTheaterType convertStringToTheaterType(const char* typeStr) {
 	return -1; // Indicating failure to find a match
 }
 
-int	saveTheaterToFile(const Theater* pTheater, FILE* fp)
+int saveTheaterToBinaryFileCompressed(const Theater* pTheater, FILE* fp)
 {
+	
+	BYTE data[1] = { 0 };
+	data[0] = pTheater->theaterNumber << 2 | pTheater->type;
 
-	if (fwrite(pTheater, sizeof(Theater), 1, fp) != 1)
-	{
-		printf("Error write date\n");
+	if (fwrite(&data, sizeof(BYTE), 1, fp) != 1)
 		return 0;
-	}
 	return 1;
 }
+
+Theater* readTheaterFromBinaryFileCompressed(FILE* fp)
+{
+	Theater* pTheater = (Theater*)malloc(sizeof(Theater));
+	BYTE data[1] = { 0 };
+
+	if (fread(&data, sizeof(BYTE), 1, fp) != 1)
+		return NULL;
+
+	// Extract the theater type from the 2 least significant bits
+	pTheater->type = (eTheaterType)(data[0] & 0x03); // Mask with 0b00000011 to get the last 2 bits 
+
+	// Extract the theater number from the 6 most significant bits
+	pTheater->theaterNumber = (data[0] >> 2) & 0x3F; // Shift right by 2 bits and mask with 0b00111111
+
+	return pTheater;
+}
+
 
 Theater* loadTheaterFromTxtFile(FILE* fp)
 {
@@ -106,6 +158,34 @@ Theater* loadTheaterFromTxtFile(FILE* fp)
 	}
 	pTheater->type = tempType;
 	setCapacity(pTheater);
+
+	return pTheater;
+}
+
+eTheaterType convertIntToTheaterType(int typeInt) {
+	if (typeInt >= 0 && typeInt < eNumOfTypes) {
+		return (eTheaterType)typeInt;
+	}
+	else {
+		return -1; // Indicate an invalid type 
+	}
+}
+
+Theater* loadTheaterFromBinaryFile(FILE* fp)
+{
+	if (!fp) return NULL;
+
+	Theater* pTheater = (Theater*)malloc(sizeof(Theater));
+	if (!pTheater) return NULL;
+
+	if (!readTheaterFromBinaryFileCompressed(fp)) 
+	{
+		fclose(fp);
+		return NULL;
+	}
+
+	
+	setCapacity(pTheater); 
 
 	return pTheater;
 }
@@ -203,6 +283,19 @@ void printTheaterV(void* val)
 
 void freeTheater(Theater* theater)
 {
-	free(theater->seats); 
-	free(theater);  
+
+	/*free(theater->seats);  
+	free(theater); */ 
+
+	// Assuming 'seats' is a dynamically allocated 2D array.
+	if (theater->seats != NULL) { 
+		//for (int i = 0; i < theater->maximumCapacity; i++) { 
+		//	if (&theater->seats[i] != NULL) { 
+		//		free(&theater->seats[i]); // Free each row of seats .
+		//	}
+		//}
+		free(theater->seats); // Free the array of pointers to rows. 
+	theater->seats = NULL; 
+
+	}
 }

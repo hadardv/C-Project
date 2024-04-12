@@ -1,6 +1,7 @@
 #ifndef __THEATER__
 #define __THEATER__
 
+typedef unsigned char BYTE;
 
 typedef enum {
 	eVIP, eRegular,e3D, eNumOfTypes
@@ -23,12 +24,18 @@ void initTheater(Theater* theater,Theater* theaterArr, int theaterCount);
 eTheaterType getTheaterType();
 eTheaterType convertStringToTheaterType(const char* typeStr);
 void setCapacity(Theater* pTheater);
+int** setTheaterSeats(Theater* theater);
 
 char* setSeat(Theater* theater);
 int checkIfSeatIsEmpty(Theater* theater, int wantedRow, int wantedCol);
+eTheaterType convertIntToTheaterType(int typeInt);
 
-int	saveTheaterToFile(const Theater* pTheater, FILE* fp);
+//int	saveTheaterToBinaryFile(const Theater* pTheater, FILE* fileName);
 Theater* loadTheaterFromTxtFile(FILE* fp);
+Theater* loadTheaterFromBinaryFile(FILE* fp);
+int saveTheaterToBinaryFileCompressed(const Theater* pTheater, FILE* fp);
+Theater* readTheaterFromBinaryFileCompressed(FILE* fp);
+
 
 void printTheater(const Theater* theater);
 void printTheaterV(void* val);

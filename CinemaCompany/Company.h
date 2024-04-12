@@ -13,8 +13,8 @@ typedef struct
 	sortType    type;
 	LIST branchList; 
 	char* name;
-	Ticket* ticketSales;
-	int numOfTickets;
+	/*Ticket* ticketSales;
+	int numOfTickets;*/
 
 }Company;
 
@@ -37,7 +37,7 @@ int	getBranchescount(const Company* comp);
 int saveCompanyToBinaryFile(const Company* comp, const char* fileName);
 int saveCompanyToTxtFile(const Company* comp, const char* fileName);
 int loadCompanyFromTxtFile(Company* comp, const char* fileName);
-//int loadCompanyFromBinaryFile(Company* comp, const char* fileName);
+int loadCompanyFromBinaryFile(Company* comp, const char* fileName);
 
 
 int compareShowTimeByDate(const void* v1, const void* v2);

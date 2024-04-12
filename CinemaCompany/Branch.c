@@ -51,21 +51,22 @@ int saveBranchToBinaryFile(const Branch* pBranch, FILE* fp) {
 
 	 
 	for (int i = 0; i < pBranch->numOfMovies; i++) {
-		if (!saveMovieToFile(pBranch->moviesArr[i], fp)) {
+		if (!saveMovieToBinaryFile(pBranch->moviesArr[i], fp)) {
 			printf("Error writing movie\n");
 			COLSE_FILE_RETURN_ZERO(fp);
 		}
 	}
 
 	for (int i = 0; i < pBranch->numOfTheaters; i++) {
-		if (!saveTheaterToFile(&pBranch->theaterArray[i], fp)) {
+		if (!saveTheaterToBinaryFileCompressed(&pBranch->theaterArray[i], fp)) {
 			printf("Error writing theater\n");
 			COLSE_FILE_RETURN_ZERO(fp);
 		}
+
 	}
 
 	for (int i = 0; i < pBranch->numOfShowTime; i++) {
-		if (!saveShowTimeToFile(&pBranch->showTimeArray[i], fp)) {
+		if (!saveShowTimeToBinaryFile(&pBranch->showTimeArray[i], fp)) {
 			printf("Error writing showtime\n");
 			COLSE_FILE_RETURN_ZERO(fp);
 		}
@@ -120,9 +121,8 @@ int loadBranchFromTxtFile(Branch* pBranch, FILE* fp)
 	int tempNumMovies = 0; 
 	int tempNumShowTimes = 0; 
 
-	RETURN_ZERO(pBranch);
+	RETURN_ZERO(pBranch); 
 
-	
 	fscanf(fp, "%d", &pBranch->serialNum);
 	myGets(tempName, MAX_STR_LEN, fp);
 	pBranch->name = getDynStr(tempName); 
@@ -163,6 +163,7 @@ int loadBranchFromTxtFile(Branch* pBranch, FILE* fp)
 		RETURN_AND_FREE(pBranch->theaterArray);
 	
 		pBranch->theaterArray[i] = *tempTheater;
+		pBranch->theaterArray[i].seats = setTheaterSeats(tempTheater);
 		free(tempTheater); 
 	}
 
@@ -208,11 +209,137 @@ ShowTime* loadShowTimeFromTxtFile(Branch* pBranch, FILE* fp)
 	 tempDate = *loadDateFromTxtFile(fp);
 	 tempTime = *loadTimeFromTxtFile(fp);
 
-	 pShowTime->date = tempDate; // here
-	 pShowTime->time = tempTime; // here
+	 pShowTime->date = tempDate; 
+	 pShowTime->time = tempTime;
 
 	 return pShowTime;
 
+}
+
+int loadBranchFromBinaryFile(Branch* pBranch, FILE* fp)
+{
+	if (!pBranch || !fp) return 0;
+
+	Movie* tempMovie; 
+
+	if (!readIntFromFile(&pBranch->serialNum, fp, "Error reading serial number\n"))
+	{
+		fclose(fp);
+		return 0;
+	}
+
+	pBranch->name = readStringFromFile(fp, "Error reading branch name\n");
+	if (!pBranch->name) 
+	{
+		fclose(fp); 
+		return 0; 
+	}
+	pBranch->cityLocation = readStringFromFile(fp, "Error reading branch city location\n");
+	if (!pBranch->cityLocation)
+	{
+		fclose(fp); 
+		return 0;
+	}
+
+	if (!readIntFromFile(&pBranch->numOfTheaters, fp, "Error reading number of theaters\n"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!readIntFromFile(&pBranch->numOfMovies, fp, "Error reading number of movies\n"))
+	{
+		fclose(fp);
+		return 0;
+	}
+	if (!readIntFromFile(&pBranch->numOfShowTime, fp, "Error reading number of show times\n"))
+	{
+		fclose(fp);
+		return 0;
+	}
+
+	pBranch->moviesArr = (Movie**)malloc(pBranch->numOfMovies * sizeof(Movie*));
+	RETURN_ZERO(pBranch->moviesArr);
+
+	pBranch->theaterArray = (Theater*)malloc(pBranch->numOfTheaters * sizeof(Theater));
+	RETURN_ZERO(pBranch->theaterArray);
+
+	pBranch->showTimeArray = (ShowTime*)malloc(pBranch->numOfShowTime * sizeof(ShowTime));
+	RETURN_ZERO(pBranch->showTimeArray);
+
+	for (int i = 0; i < pBranch->numOfMovies; i++) { 
+		tempMovie = loadMovieFromBinaryFile(fp);
+		if (!tempMovie) {
+			// Free all previously allocated Movies
+			for (int j = 0; j < i; j++) {
+				free(pBranch->moviesArr[j]->name); // Assuming 'name' was dynamically allocated 
+				free(pBranch->moviesArr[j]);
+			}
+			free(pBranch->moviesArr); // Free the array itself 
+			return 0;
+		}
+		pBranch->moviesArr[i] = tempMovie;
+	}
+
+	for (int i = 0; i < pBranch->numOfTheaters; i++)
+	{
+		Theater* tempTheater = readTheaterFromBinaryFileCompressed(fp);
+		RETURN_AND_FREE(pBranch->theaterArray); 
+
+		pBranch->theaterArray[i] = *tempTheater; 
+		pBranch->theaterArray[i].seats = setTheaterSeats(tempTheater);
+		free(tempTheater); 
+	}
+
+	for (int i = 0; i < pBranch->numOfShowTime; i++) 
+	{
+
+		ShowTime* tempShowTime = loadShowTimeFromBinaryFile(pBranch, fp);
+		if (!tempShowTime) 
+		{
+			free(pBranch->showTimeArray); 
+			return 0;
+		}
+		pBranch->showTimeArray[i] = *tempShowTime; 
+		free(tempShowTime); 
+	}
+
+	return 1;
+}
+
+ShowTime* loadShowTimeFromBinaryFile(Branch* pBranch, FILE* fp)
+{
+	if (!fp || !pBranch) return NULL; 
+
+	ShowTime* pShowTime = (ShowTime*)malloc(sizeof(ShowTime)); 
+	if (!pShowTime) return NULL; 
+	char* tempName = (char*)malloc(sizeof(char)); 
+
+	if (!readIntFromFile(&pShowTime->serialNum, fp, "Error reading show time serial number from file"))
+	{
+		fclose(fp); 
+		return 0;
+	}
+	
+	tempName = readStringFromFile(fp, "Error reading movie name from file\n");
+	if (!tempName) {
+		free(pShowTime);
+		return NULL; 
+	}
+
+	// Find the movie by name within the branch
+	pShowTime->theMovie = *findMovieByName(pBranch, tempName);
+	free(tempName); // Free the temporary movie name buffer 
+
+	// Read theater number and find the theater within the branch
+	int theaterNum;
+	fread(&theaterNum, sizeof(theaterNum), 1, fp);
+	pShowTime->theTheater = *findTheaterByNum(pBranch, theaterNum);
+
+	// Read date and time directly
+	pShowTime->date = *loadDateFromBinaryFile(fp);
+	pShowTime->time = *loadTimeFromBinaryFile(fp);
+
+	return pShowTime;
 }
 
 
@@ -368,21 +495,21 @@ void freeBranch(Branch* branch) {
 		branch->cityLocation = NULL;
 	}
 
-	// Free each Theater in the theaterArray
-	if (branch->theaterArray != NULL) {
+	// Free each Theater in the theaterArray if there is
+	if (branch->theaterArray != NULL && branch->numOfTheaters>0) {
 		freeTheaterArr(branch);
 		branch->theaterArray = NULL;
 	}
 
 	// Free each Movie pointer in moviesArr
-	if (branch->moviesArr != NULL) {
+	if (branch->moviesArr != NULL && branch->numOfMovies > 0) {
 		freeMovieArr(branch);
 		branch->moviesArr = NULL;
 	}
 
 	// Free each ShowTime in the showTimeArray
-	if (branch->showTimeArray != NULL) {
-		freeTheaterArr(branch);
+	if (branch->showTimeArray != NULL && branch->numOfShowTime > 0) {
+		freeShowTimeArr(branch);
 		branch->showTimeArray = NULL; 
 	}
 
@@ -392,8 +519,12 @@ void freeBranch(Branch* branch) {
 
 void freeTheaterArr(Branch* branch)
 {
-	generalArrayFunction(branch->theaterArray, branch->numOfTheaters, sizeof(Theater), freeTheater);
-	
+	//generalArrayFunction(branch->theaterArray, branch->numOfTheaters, sizeof(Theater), freeTheater);
+	for (int i = 0; i < branch->numOfTheaters; i++) {
+		freeTheater(&branch->theaterArray[i]); 
+	}
+	// After all theaters have been freed, free the theater array itself.
+	free(branch->theaterArray);
 }
 
 void freeShowTimeArr(Branch* branch)
